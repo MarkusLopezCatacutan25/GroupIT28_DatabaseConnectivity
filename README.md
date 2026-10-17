@@ -1,6 +1,18 @@
 # SavorPinoy — Group IT28
 
+**Capstone:** SAVORPINOY: A 2D INTERACTIVE CULINARY SIMULATOR FOR PRESERVING CALABARZON TRADITIONAL FOOD HERITAGE
+
 Unity capstone prototype for a 2D Philippine culinary heritage game. The Unity project is **`SavorPinoyPrototype/`**, not this repository root.
+
+## Prototype
+
+The prototype features Main Menu navigation and a Batangas cooking stage for **Adobo sa Dilaw**. Players select traditional ingredients such as luyang dilaw, garlic, and meat, prepare the dish, and earn a culinary score. Performance records are saved to Firebase Realtime Database and high scores can be loaded for the leaderboard.
+
+The Unity client tracks choices in memory, computes a score, and writes a JSON record under `/player_scores`. When requested, it retrieves records from that node and displays the leaderboard. Records include `player_name`, `score`, `dish_name`, `level`, `remarks`, and `created_at`.
+
+**Group members:** Markus Johann L. Catacutan, Alano (Jairus Reive), and Gaile Dichoso.
+
+**Tools:** Unity Editor, C#, Firebase Realtime Database, Figma, and GitHub Desktop.
 
 ## First checkout
 
@@ -41,5 +53,11 @@ git lfs fsck
 Inspect the staged file list before committing. Never add signing keys, service-account private keys or local environment files. Assets/google-services.json is the canonical Firebase client configuration; Unity regenerates the ignored desktop configuration from it. The client configuration is app configuration, not a server credential; database configuration/security and online backend acceptance belong to DEV-05.
 
 **DEV-01 Repository Check** runs automatically on GitHub pushes and pull requests. It validates repository structure and assets; it does not build an APK or claim a Unity gameplay/pilot test. First imports may need network access to Unity Package Manager and Android dependencies.
+
+## Scope and references
+
+This is a classroom prototype. Advanced mechanics such as knife-slicing physics, a jeepney travel map hub, and daily nutritional habit tracking are future iterations. The instructor GitHub account `gracheleliza` was added as a collaborator.
+
+References: [Firebase Unity SDK Documentation](https://firebase.google.com/docs/unity/setup) and the UPHSL 1stBIT4120L Technical Guide for Activity 5.
 
 See [DEV-01 setup and handoff](SavorPinoyPrototype/Docs/DEV-01-Repo-Project-Setup.md) for acceptance evidence, the Unity batch command, and the GitHub checklist.
