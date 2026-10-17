@@ -51,6 +51,10 @@ class MetadataChecks(unittest.TestCase):
         meta = self.write(name + ".meta", "guid: invalid\n")
         self.assertTrue(any("Invalid" in e for e in metadata_errors(self.root, [name, meta])))
 
+    def test_gitkeep_is_not_a_unity_asset(self):
+        name = self.write("SavorPinoyPrototype/Assets/.gitkeep")
+        self.assertEqual([], metadata_errors(self.root, [name]))
+
 
 if __name__ == "__main__":
     unittest.main()

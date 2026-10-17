@@ -24,7 +24,7 @@ The project targets Android SDK 26 minimum and ARM64. Unity package versions and
 - Put game sprites in `SavorPinoyPrototype/Assets/Sprites/`. First imports default to Single Sprite, 100 PPU, bilinear filtering, Clamp, alpha transparency, no mipmaps, maximum 2048 and uncompressed textures. Designers can override settings afterward; reimport preserves overrides and GUIDs.
 - Move and rename assets in Unity's Project window so their `.meta` files follow them. Commit each asset and its metadata together. Existing sliced sprites and borders are preserved.
 - Images, audio, fonts and native SDK binaries use Git LFS. Unity scenes, prefabs, `.asset` files and `.meta` files remain text in normal Git. Commit `.gitattributes` whenever adding a binary type.
-- Library, Temp, Logs, UserSettings, builds, generated resolver output and exported `.unitypackage` archives are excluded. Original imported Firebase SDK source binaries remain included; Android resolver output can be regenerated with **Assets → External Dependency Manager → Android Resolver → Force Resolve**.
+- Library, Temp, Logs, UserSettings, builds, generated resolver output, generated Firebase desktop configuration and exported `.unitypackage` archives are excluded. Original imported Firebase SDK source binaries remain included; Android resolver output can be regenerated with **Assets → External Dependency Manager → Android Resolver → Force Resolve**.
 
 ## Before committing
 
@@ -38,7 +38,7 @@ git lfs status
 git lfs fsck
 ```
 
-Inspect the staged file list before committing. Never add signing keys, service-account private keys or local environment files. Firebase client configuration already in Assets is app configuration, not a server credential; database configuration/security and online backend acceptance belong to DEV-05.
+Inspect the staged file list before committing. Never add signing keys, service-account private keys or local environment files. Assets/google-services.json is the canonical Firebase client configuration; Unity regenerates the ignored desktop configuration from it. The client configuration is app configuration, not a server credential; database configuration/security and online backend acceptance belong to DEV-05.
 
 **DEV-01 Repository Check** runs automatically on GitHub pushes and pull requests. It validates repository structure and assets; it does not build an APK or claim a Unity gameplay/pilot test. First imports may need network access to Unity Package Manager and Android dependencies.
 

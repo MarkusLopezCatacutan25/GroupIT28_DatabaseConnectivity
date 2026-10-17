@@ -37,7 +37,9 @@ def metadata_errors(root, asset_paths):
         path = PurePosixPath(name)
         if path.suffix == ".meta" or opaque(name):
             continue
-        needed.add(name + ".meta")
+        # Unity ignores hidden .gitkeep files used to retain empty generated-asset folders.
+        if path.name != ".gitkeep":
+            needed.add(name + ".meta")
         for parent in path.parents:
             if parent.as_posix() == PROJECT + "/Assets":
                 break

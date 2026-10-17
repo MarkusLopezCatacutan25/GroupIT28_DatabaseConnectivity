@@ -111,3 +111,7 @@ InitTestScene*.unity*
 /Assets/GeneratedLocalRepo.meta
 /Assets/Scenes/*.unitypackage
 /Assets/Scenes/*.unitypackage.meta
+
+# Firebase regenerates the desktop configuration and its GUID from Assets/google-services.json.
+/Assets/StreamingAssets/google-services-desktop.json
+/Assets/StreamingAssets/google-services-desktop.json.meta

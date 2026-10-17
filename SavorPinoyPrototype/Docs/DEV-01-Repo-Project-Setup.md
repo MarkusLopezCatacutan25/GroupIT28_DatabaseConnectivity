@@ -63,3 +63,14 @@ The local milestone must be pushed before the website can show it. In GitHub Des
 - [GitHub Python setup action](https://github.com/actions/setup-python)
 
 Local verification results are recorded below after the release checks. Remote upload, hosted CI and teammate-device results are not inferred from local tests.
+
+
+## Verified locally — 17 October 2026
+
+- Local Unity source milestone commit: 953d51d (follow-up verification/hygiene commit records these results).
+- Seven validator regression cases pass: missing, valid, duplicate, orphan and malformed metadata, native plugin contents, and Unity-ignored .gitkeep files.
+- Repository and fresh local clone preflight pass; 97 binary LFS assets hydrate correctly and git lfs fsck passes. Repository connectivity verification passes.
+- A fresh clone with no project Library directory resolved the locked packages and compiled the full Unity project with 6000.6.3f1.
+- Unity batch validation returned exit code 0. All three enabled scenes opened without missing scripts; SDK 26/ARM64 and Force Text checks passed; a newly imported sprite received the policy, then retained its changed filter mode and GUID on reimport.
+- First import revealed that Firebase regenerates google-services-desktop.json and its metadata GUID. Both generated files are now excluded, while Assets/google-services.json remains tracked as the source. A hidden .gitkeep retains StreamingAssets and its existing folder GUID. Generated desktop configuration files remain on the working machine; no client configuration was deleted.
+- The local evidence log is retained outside the repository in the task workspace under tmp/dev01/tests/unity-setup.log. Hosted GitHub CI, remote LFS upload and a teammate checkout are still awaiting the push and the human checks above.
