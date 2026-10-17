@@ -1,0 +1,22 @@
+name: DEV-01 Repository Check
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  repository:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          lfs: true
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Test the repository validator
+        run: python -m unittest discover -s tools/tests -v
+      - name: Check Unity sources, metadata, packages and LFS
+        run: python tools/dev01_check.py --require-tracked
+      - name: Verify downloaded LFS objects
+        run: git lfs fsck
