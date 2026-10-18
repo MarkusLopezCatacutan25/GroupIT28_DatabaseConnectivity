@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Firebase;
 using Firebase.Database;
+using Firebase.Auth;
 using Firebase.Extensions;
 using UnityEngine;
 
@@ -29,7 +30,8 @@ public sealed class PrototypeOutbox
     public string cacheSavedUtc="";
 }
 
-// Keeps the existing six-field cloud schema; no credentials or database rules are changed.
+// Six gameplay fields plus authenticated owner_uid. score_id is the node key.
+// Deploy database.rules.json and enable Anonymous Authentication before online testing.
 public sealed class PrototypeScoreService : MonoBehaviour
 {
     public static PrototypeScoreService Instance { get; private set; }
@@ -38,7 +40,10 @@ public sealed class PrototypeScoreService : MonoBehaviour
     public bool Reading { get; private set; }
     public event Action Changed;
     private PrototypeOutbox box=new PrototypeOutbox();
+    public const int MaximumScore = 9375; // 7500 culinary points * 1.25 trivia multiplier.
+    private FirebaseAuth auth;
     private DatabaseReference root;
+    public string LastRecordId { get; private set; } = "";
     private string path, configuredUrl;
     private bool initializing, ready, storageReady=true;
     private double retryAt;
@@ -59,6 +64,12 @@ public sealed class PrototypeScoreService : MonoBehaviour
         if(Instance && Instance!=this){Destroy(gameObject);return;}Instance=this;DontDestroyOnLoad(gameObject);
         path=Path.Combine(Application.persistentDataPath,"savorpinoy-prototype-outbox.json");LoadLocal();
         Leaderboard=string.IsNullOrEmpty(box.leaderboardCache)?"No cached leaderboard. Connect to load scores.":"Cached ("+box.cacheSavedUtc+")\n"+box.leaderboardCache;
+    }
+    public static bool IsValidAlias(string alias)
+    {
+        return !string.IsNullOrWhiteSpace(alias) && alias.Length<=24 &&
+            System.Text.RegularExpressions.Regex.IsMatch(alias,@"\A[a-zA-Z0-9 _ñÑáéíóúÁÉÍÓÚ.\-]+\z") &&
+            System.Text.RegularExpressions.Regex.IsMatch(alias,@"[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ]");
     }
     private void LoadLocal()
     {
@@ -92,8 +103,9 @@ public sealed class PrototypeScoreService : MonoBehaviour
     public bool Queue(string runId,string alias,CookingAttempt attempt)
     {
         if(attempt==null || !attempt.TimedChallenge || attempt.Phase!=CookingPhase.Success || string.IsNullOrEmpty(runId))return false;
-        alias=(alias??"").Trim();if(alias.Length<1||alias.Length>24||alias.Any(char.IsControl)){Status="Enter a chef alias with 1-24 characters.";Notify();return false;}
-        string id="slice_"+runId;
+        alias=(alias??"").Trim();if(!IsValidAlias(alias)){Status="Use 1-24 letters/numbers; spaces, period, underscore and hyphen are allowed.";Notify();return false;}
+        if(attempt.FinalScore<0 || attempt.FinalScore>MaximumScore){Status="Invalid score. Result was not queued.";Notify();return false;}
+        string id="slice_"+runId; LastRecordId=id;
         if(box.items.Any(i=>i.recordId==id)){Status="This attempt is already saved locally.";Notify();return true;}
         PendingPrototypeScore item=new PendingPrototypeScore{recordId=id,rubric=CookingAttempt.Rubric,rawScore=attempt.RawScore,cuttingScore=attempt.CuttingScore,sequenceScore=attempt.SequenceScore,thermalScore=attempt.ThermalScore,mistakes=attempt.Mistakes,cuttingAccuracy=(float)attempt.CuttingAccuracy,
             record=new PlayerScoreRecord(alias,attempt.FinalScore,"Adobo sa Dilaw","Batangas",CookingAttempt.Rubric+" | "+attempt.Stars+" stars",DateTime.UtcNow.ToString("o"))};
@@ -104,7 +116,7 @@ public sealed class PrototypeScoreService : MonoBehaviour
     private void Initialize()
     {
         if(ready||initializing)return;
-        if(string.IsNullOrWhiteSpace(configuredUrl)){Status="Database URL is not configured. Scores can still be saved on this device.";Notify();return;}
+
         initializing=true;
         FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task=>
         {
@@ -115,9 +127,25 @@ public sealed class PrototypeScoreService : MonoBehaviour
             string candidate=configuredUrl;
             if(string.IsNullOrWhiteSpace(candidate))candidate=FirebaseApp.DefaultInstance.Options.DatabaseUrl?.ToString();
             if(!Uri.TryCreate(candidate,UriKind.Absolute,out url)||url.Scheme!="https"){Status="Database URL is not configured. Scores can still be saved on this device.";Notify();return;}
-            try{root=FirebaseDatabase.GetInstance(FirebaseApp.DefaultInstance,url.ToString()).RootReference;ready=true;Status="Firebase initialized. Submission still requires server acknowledgement.";Notify();}
-            catch(Exception e){Status="Database setup failed; scores remain local.";Debug.LogWarning(e.GetType().Name);Notify();}
+            try
+            {
+                root=FirebaseDatabase.GetInstance(FirebaseApp.DefaultInstance,url.ToString()).RootReference;
+                auth=FirebaseAuth.DefaultInstance;
+                initializing=true;Status="Signing in for score ownership...";Notify();
+                Authenticate().ContinueWithOnMainThread(login=>
+                {
+                    if(!this)return;initializing=false;
+                    ready=!login.IsCanceled&&!login.IsFaulted&&auth.CurrentUser!=null;
+                    Status=ready?"Signed in. Pending scores will sync; success requires server acknowledgement.":"Sign-in failed. Enable Anonymous Authentication; results remain saved for Retry sync.";
+                    Notify();
+                });
+            }
+            catch(Exception e){initializing=false;Status="Database setup failed; scores remain local.";Debug.LogWarning(e.GetType().Name);Notify();}
         });
+    }
+    private async Task Authenticate()
+    {
+        if(auth.CurrentUser==null)await auth.SignInAnonymouslyAsync();
     }
     private void Update()
     {
@@ -127,8 +155,16 @@ public sealed class PrototypeScoreService : MonoBehaviour
             if(!writeSlow && Time.realtimeSinceStartup-writeStarted>10){writeSlow=true;Status="Score is pending. A slow connection may still acknowledge it later.";Notify();}
             return;
         }
+        if(ready && (auth==null || auth.CurrentUser==null)){ready=false;Status="Signed out. Results remain local; use Retry sync.";Notify();}
         if(!ready||!storageReady||Time.realtimeSinceStartupAsDouble<retryAt)return;
         PendingPrototypeScore item=box.items.FirstOrDefault(i=>!i.synced && i.lastError!="Rejected");if(item==null)return;
+        if(string.IsNullOrEmpty(item.record.owner_uid))
+        {
+            item.record.owner_uid=auth.CurrentUser.UserId;
+            if(!Persist()){item.record.owner_uid=null;retryAt=Time.realtimeSinceStartupAsDouble+10;Notify();return;}
+        }
+        if(item.record.owner_uid!=auth.CurrentUser.UserId){item.lastError="Rejected";Status="Pending score belongs to another sign-in. Original result preserved.";Persist();Notify();return;}
+        Status="Saving to Firebase: "+item.recordId+". Waiting for server acknowledgement.";Notify();
         activeItem=item;writeStarted=Time.realtimeSinceStartup;writeSlow=false;
         // Read same ID before writing: restart after lost acknowledgement must not create another row.
         activeWrite=ReconcileAndWrite(item);
@@ -142,7 +178,7 @@ public sealed class PrototypeScoreService : MonoBehaviour
                 item.lastError=rejected?"Rejected":"Retry";Status=rejected?"Cloud rejected this record. It is preserved locally; check database rules.":"Sync interrupted. The same record will retry; it remains saved locally.";
                 attempts++;retryAt=Time.realtimeSinceStartupAsDouble+Math.Min(60,Math.Pow(2,Math.Min(attempts,5)))+UnityEngine.Random.value;
             }
-            else{item.synced=true;item.lastError="";attempts=0;Status="Score acknowledged by Firebase.";}
+            else{item.synced=true;item.lastError="";attempts=0;Status="Saved successfully to Firebase: "+item.recordId;}
             activeWrite=null;activeItem=null;Persist();Notify();
         });
     }
@@ -153,7 +189,7 @@ public sealed class PrototypeScoreService : MonoBehaviour
         if(old.Exists)
         {
             PlayerScoreRecord existing=JsonUtility.FromJson<PlayerScoreRecord>(old.GetRawJsonValue());
-            if(existing!=null && existing.player_name==item.record.player_name && existing.score==item.record.score && existing.created_at==item.record.created_at && existing.dish_name==item.record.dish_name && existing.level==item.record.level && existing.remarks==item.record.remarks)return;
+            if(existing!=null && existing.player_name==item.record.player_name && existing.score==item.record.score && existing.created_at==item.record.created_at && existing.dish_name==item.record.dish_name && existing.level==item.record.level && existing.remarks==item.record.remarks && existing.owner_uid==item.record.owner_uid)return;
             throw new InvalidOperationException("Record identity conflict");
         }
         await target.SetRawJsonValueAsync(JsonUtility.ToJson(item.record));
@@ -174,7 +210,7 @@ public sealed class PrototypeScoreService : MonoBehaviour
                 catch(Exception){/* malformed legacy record is skipped, never interpreted as a zero score */}
             }
             rows=rows.OrderByDescending(r=>r.Value.score).ThenBy(r=>r.Key,StringComparer.Ordinal).ToList();
-            Leaderboard=rows.Count==0?"No valid records found.":string.Join("\n",rows.Select((r,i)=>(i+1)+". "+r.Value.player_name+" - "+r.Value.score+" pts"));
+            Leaderboard=rows.Count==0?"No valid records found.":string.Join("\n",rows.Select((r,i)=>(i+1)+". "+r.Value.player_name+" - "+r.Value.score+" pts | "+r.Value.dish_name+"\nID: "+r.Key+" | "+r.Value.created_at));
             box.leaderboardCache=Leaderboard;box.cacheSavedUtc=DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm 'UTC'");Persist();Notify();
         });
     }

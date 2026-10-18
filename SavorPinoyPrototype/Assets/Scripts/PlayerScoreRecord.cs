@@ -9,6 +9,8 @@ public class PlayerScoreRecord
     public string level;
     public string remarks;
     public string created_at;
+    // Authenticated creator; score_id remains the parent Firebase node key.
+    public string owner_uid;
 
     public PlayerScoreRecord() { }
 

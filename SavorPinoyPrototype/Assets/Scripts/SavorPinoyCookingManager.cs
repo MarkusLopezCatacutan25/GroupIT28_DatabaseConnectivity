@@ -13,7 +13,7 @@ public sealed class SavorPinoyCookingManager : MonoBehaviour
     private string runId;
     private RectTransform safe, design, resultPanel, pausePanel, board, heritagePanel;
     private TMP_Text phaseText,timerText,objectiveText,feedbackText,heatText,potText,networkText,resultText,leaderboardText,ingredientText;
-    private TMP_InputField aliasInput;
+    private TMP_InputField aliasInput, startingAlias;
     private Button knifeButton,spoonButton,plateButton,stirButton,saveButton;
     private Button[] pantryButtons,potButtons;
     private Slider flame;
@@ -42,7 +42,7 @@ public sealed class SavorPinoyCookingManager : MonoBehaviour
     private bool paused, saved, resultShown, leaving;
     private Rect lastSafe;
     private Vector2Int lastSize;
-    
+
     private CookingPhase displayedPhase=(CookingPhase)(-1);
     private void Start()
     {
@@ -151,8 +151,9 @@ public sealed class SavorPinoyCookingManager : MonoBehaviour
     private void BuildMode()
     {
         modePanel=PrototypeUI.Panel("ChooseLearningMode",design,0,0,1800,1000,new Color(.12f,.06f,.025f,.90f)).rectTransform;
-        Label("Welcome",modePanel,"LET'S MAKE ADOBO SA DILAW",0,270,1200,100,43);
-        TMP_Text intro=PrototypeUI.Text("ModeIntro",modePanel,"Choose how you want to learn. Follow one step at a time.",0,150,1380,90,32);intro.color=Parchment;
+        Label("Welcome",modePanel,"LET'S MAKE ADOBO SA DILAW",0,330,1200,100,43);
+        TMP_Text intro=PrototypeUI.Text("ModeIntro",modePanel,"Choose how you want to learn. Follow one step at a time.",0,235,1380,70,30);intro.color=Parchment;
+        startingAlias=PrototypeUI.Input("StartingChefAlias",modePanel,0,135,650,70);startingAlias.text=PlayerPrefs.GetString("SavorPinoy.ChefAlias","");
         ActionButton("GuidedPractice",modePanel,"Guided practice / start here",-345,-5,600,105,()=>ChooseMode(false));
         ActionButton("TimedChallenge",modePanel,"Timed challenge",345,-5,600,105,()=>ChooseMode(true));
         var practice=PrototypeUI.Text("PracticeInfo",modePanel,"BEGINNER FRIENDLY\nElapsed-time clock. No expiry.\nPractice cuts, order, and heat at your pace.",-345,-160,590,200,29);practice.color=Parchment;
@@ -161,7 +162,10 @@ public sealed class SavorPinoyCookingManager : MonoBehaviour
     }
     private void ChooseMode(bool timed)
     {
-        if(!choosingMode)return;attempt=new CookingAttempt(triviaCorrect,timed,timed?120:60);choosingMode=false;modePanel.gameObject.SetActive(false);Refresh();
+        if(!choosingMode)return;
+        string alias=(startingAlias.text??"").Trim();
+        if(!PrototypeScoreService.IsValidAlias(alias)){modeNote.text="Enter 1-24 letters/numbers; spaces, period, underscore and hyphen are allowed.";return;}
+        aliasInput.text=alias;attempt=new CookingAttempt(triviaCorrect,timed,timed?120:60);choosingMode=false;modePanel.gameObject.SetActive(false);Refresh();
     }
     private void ResetKnife()
     {
@@ -184,7 +188,11 @@ public sealed class SavorPinoyCookingManager : MonoBehaviour
         platedDish=art.Draw("PlatedAdobo",resultPanel,art.Slice("dish"),540,235,480,270);
         resultBadge=Label("ResultBadge",resultPanel,"",540,420,540,80,38);
         boardTitle=Label("LeaderboardTitle",resultPanel,"",540,65,540,60,27);
-        leaderboardText=PrototypeUI.Text("LeaderboardRows",resultPanel,"",535,-75,565,195,27);leaderboardText.color=Parchment;leaderboardText.alignment=TextAlignmentOptions.TopLeft;
+        RectTransform viewport=PrototypeUI.Panel("LeaderboardViewport",resultPanel,535,-75,565,195,new Color(0,0,0,.25f)).rectTransform;
+        viewport.gameObject.AddComponent<RectMask2D>();
+        ScrollRect scroll=viewport.gameObject.AddComponent<ScrollRect>();scroll.viewport=viewport;scroll.horizontal=false;scroll.movementType=ScrollRect.MovementType.Clamped;
+        leaderboardText=PrototypeUI.Text("LeaderboardRows",viewport,"",0,0,545,195,22);leaderboardText.color=Parchment;leaderboardText.alignment=TextAlignmentOptions.TopLeft;
+        RectTransform content=leaderboardText.rectTransform;content.anchorMin=content.anchorMax=new Vector2(.5f,1);content.pivot=new Vector2(.5f,1);scroll.content=content;
         loadScores=ActionButton("LoadLeaderboard",resultPanel,"Refresh scores",520,-230,360,70,()=>scores.LoadLeaderboard());
         boardNote=PrototypeUI.Text("LeaderboardNote",resultPanel,"",520,-305,540,80,23);boardNote.color=Parchment;
         networkText=PrototypeUI.Text("NetworkStatus",resultPanel,"",0,-445,1630,65,23);networkText.color=Parchment;
@@ -285,8 +293,8 @@ public sealed class SavorPinoyCookingManager : MonoBehaviour
         resultShown=true;resultBadge.text=attempt.Stars+" / 3 STARS";boardTitle.text=attempt.TimedChallenge?"TIMED CHALLENGE SCORES":"YOUR PRACTICE TIME";boardNote.text=attempt.TimedChallenge?"Practice results use a separate local history.":"Take your time. Focus on accurate cuts, ingredient order, and heat.";loadScores.gameObject.SetActive(attempt.TimedChallenge);retrySync.gameObject.SetActive(attempt.TimedChallenge);resultPanel.gameObject.SetActive(true);pausePanel.gameObject.SetActive(false);paused=false;flame.SetValueWithoutNotify(0);
         platedDish.gameObject.SetActive(attempt.Phase==CookingPhase.Success);
         string title=attempt.Phase==CookingPhase.Success?"Adobo sa Dilaw Completed":"Retry and Improve";
-        resultText.text=title+"\n"+attempt.Stars+" / 3 stars\n\nYour Cooking Skills\nCutting: "+attempt.CuttingScore+" / 2500 ("+Mathf.RoundToInt((float)attempt.CuttingAccuracy*100)+"%)\nSequence: "+attempt.SequenceScore+" / 2500\nHeat control: "+attempt.ThermalScore+" / 2500\nPenalties: -"+attempt.Penalties+"\nRaw cooking score: "+attempt.RawScore+"\nTrivia multiplier: "+attempt.Multiplier+"x\nFinal score: "+attempt.FinalScore+"\n\nActive time: "+attempt.Elapsed.ToString("0.00")+"s (prep "+attempt.PrepElapsed.ToString("0.00")+"s, cooking "+attempt.CookElapsed.ToString("0.00")+"s)\n"+(attempt.TimedChallenge?"Timed challenge":"Guided practice / not ranked")+"\n"+attempt.Message;
-        saveButton.interactable=attempt.Phase==CookingPhase.Success;saveButton.GetComponentInChildren<TMP_Text>().text=attempt.TimedChallenge?"Save score":"Save practice";aliasInput.interactable=saveButton.interactable;NetworkChanged();
+        resultText.text=title+"\n"+attempt.Stars+" / 3 stars\n\nYour Cooking Skills\nCutting: "+attempt.CuttingScore+" / 2500 ("+Mathf.RoundToInt((float)attempt.CuttingAccuracy*100)+"%)\nSequence: "+attempt.SequenceScore+" / 2500\nHeat control: "+attempt.ThermalScore+" / 2500\nPenalties: -"+attempt.Penalties+"\nRaw cooking score: "+attempt.RawScore+"\nTrivia multiplier: "+attempt.Multiplier+"x\nFinal score: "+attempt.FinalScore+"\nRecord ID: slice_"+runId+"\n\nActive time: "+attempt.Elapsed.ToString("0.00")+"s (prep "+attempt.PrepElapsed.ToString("0.00")+"s, cooking "+attempt.CookElapsed.ToString("0.00")+"s)\n"+(attempt.TimedChallenge?"Timed challenge":"Guided practice / not ranked")+"\n"+attempt.Message;
+        saveButton.interactable=attempt.Phase==CookingPhase.Success;saveButton.GetComponentInChildren<TMP_Text>().text=attempt.TimedChallenge?"Save score":"Save practice";aliasInput.interactable=false;NetworkChanged();
     }
     private void SaveScore()
     {
@@ -295,7 +303,7 @@ public sealed class SavorPinoyCookingManager : MonoBehaviour
         if(scores.Queue(runId,aliasInput.text,attempt)){saved=true;saveButton.interactable=false;aliasInput.interactable=false;PlayerPrefs.SetString("SavorPinoy.ChefAlias",aliasInput.text.Trim());PlayerPrefs.Save();}
         NetworkChanged();
     }
-    private void NetworkChanged(){if(scores==null)return;if(networkText)networkText.text=attempt!=null&&!attempt.TimedChallenge?(practiceSaveStatus??"Guided practice / save your timing locally. Not submitted to the ranked board."):scores.Status;if(leaderboardText)leaderboardText.text=attempt!=null&&!attempt.TimedChallenge?"Preparation: "+attempt.PrepElapsed.ToString("0.00")+" s\nCooking: "+attempt.CookElapsed.ToString("0.00")+" s\nTotal active time: "+attempt.Elapsed.ToString("0.00")+" s":scores.Leaderboard;}
+    private void NetworkChanged(){if(scores==null)return;if(networkText)networkText.text=attempt!=null&&!attempt.TimedChallenge?(practiceSaveStatus??"Guided practice / save your timing locally. Not submitted to the ranked board."):scores.Status;if(leaderboardText)leaderboardText.text=attempt!=null&&!attempt.TimedChallenge?"Preparation: "+attempt.PrepElapsed.ToString("0.00")+" s\nCooking: "+attempt.CookElapsed.ToString("0.00")+" s\nTotal active time: "+attempt.Elapsed.ToString("0.00")+" s":scores.Leaderboard;if(leaderboardText){leaderboardText.rectTransform.sizeDelta=new Vector2(545,Mathf.Max(195,leaderboardText.preferredHeight));}}
     private void Pause(bool value){if(attempt==null||attempt.Terminal)return;paused=value;chopping.CancelStroke();pausePanel.gameObject.SetActive(value);Refresh();}
     private void OnApplicationPause(bool value){if(value)Pause(true);}
     private void OnApplicationFocus(bool value){if(!value)Pause(true);}

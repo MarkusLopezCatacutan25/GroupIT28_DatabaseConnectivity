@@ -1,0 +1,10 @@
+{
+  "name": "savorpinoy-activity5-verification",
+  "private": true,
+  "description": "Local emulator verification only; no production Firebase deployment",
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "6.0.0",
+    "firebase": "13.0.0",
+    "firebase-tools": "13.35.1"
+  }
+}
