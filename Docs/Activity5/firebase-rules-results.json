@@ -1,0 +1,42 @@
+{
+  "scope": "LOCAL EMULATOR ONLY; not live Firebase or Unity cloud evidence",
+  "passed": 26,
+  "results": [
+    "owner creates valid record",
+    "unauthenticated creation denied",
+    "forged owner denied",
+    "overwrite denied",
+    "deletion denied",
+    "negative score denied",
+    "score over 9375 denied",
+    "fractional score denied",
+    "string score denied",
+    "empty nickname denied",
+    "long nickname denied",
+    "control characters denied",
+    "wrong dish denied",
+    "wrong stage denied",
+    "wrong timestamp type denied",
+    "wrong timestamp format denied",
+    "invalid remarks denied",
+    "extra field denied",
+    "missing ownership denied",
+    "invalid key denied",
+    "zero score allowed",
+    "unbounded leaderboard denied",
+    "unauthenticated leaderboard denied",
+    "oversized leaderboard denied",
+    "top 10 contains same record",
+    "new client retrieves same record"
+  ],
+  "matchingRecord": {
+    "score_id": "slice_00000000000000000000000000000001",
+    "created_at": "2026-10-18T12:00:00.0000000Z",
+    "dish_name": "Adobo sa Dilaw",
+    "level": "Batangas",
+    "owner_uid": "chef-a",
+    "player_name": "Activity5Chef",
+    "remarks": "batangas_slice_v1 | 3 stars",
+    "score": 9375
+  }
+}
