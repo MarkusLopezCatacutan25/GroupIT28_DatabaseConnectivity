@@ -1,13 +1,15 @@
 # SavorPinoy vertical slice — 27 October 2026
 
-> 3 November update: two-province trivia and preparation changes are described in [the November release notes](../DEV-03/November03/README.md). Quezon live saves require publication of the revised rules; October live evidence is historical.
+> 3 November update: two-province trivia and preparation changes are described in [the November release notes](../DEV-03/November03/README.md).
+>
+> 8 November update: the two-dish database rules were deployed to the Singapore instance and verified live. 20 live Unity SDK checks passed for both Batangas and Quezon (acknowledged write, matching same-UID read-back, history and Continue gate). See [the November 8 report](../DEV-03/November08/README.md). Those were unranked validation attempts; a ranked Quezon leaderboard row has not yet been exercised live.
 
 
 SAVORPINOY: A 2D Interactive Culinary Simulator for Preserving CALABARZON Traditional Food Heritage. Audience: UPHSL Junior High School TLE and first-year CIHM culinary students. Unity 6000.6.3f1, uGUI/TextMeshPro; Firebase Unity SDK 13.17.0 Auth and Realtime Database.
 
 ## One demonstrable path
 
-MainMenu → RegionalTriviaHub → Batangas / Adobo sa Dilaw → CookingStage → correct cooking → anonymous authenticated UID → atomic RTDB write → matching UID-owned read-back → enabled Continue → heritage response.
+MainMenu → RegionalTriviaHub → random first province (Batangas / Adobo sa Dilaw or Quezon / Pancit Habhab) → CookingStage → correct cooking → anonymous authenticated UID → atomic RTDB write → matching UID-owned read-back → enabled Continue → heritage response.
 
 Open `SavorPinoyPrototype/` in Unity. Start `Assets/Scenes/MainMenu.unity`; CookingStage requires the resolved trivia handoff. BatangasStage is deprecated. Retained mechanics include practice stopwatch, optional timed challenge, knife strokes, ordered additions, heat retention, vinegar simmer, scoring and trivia rewards. Existing storyboard artwork and kitchen layout remain in use.
 

@@ -1,6 +1,8 @@
 # SavorPinoy — Group 28
 
-> 3 November update: two-province trivia and preparation changes are described in [the November release notes](Docs/DEV-03/November03/README.md). Quezon live saves require publication of the revised rules; October live evidence is historical.
+> 3 November update: two-province trivia and preparation changes are described in [the November release notes](Docs/DEV-03/November03/README.md).
+>
+> 8 November update: the two-dish database rules were deployed to the Singapore instance and verified live. 20 live Unity SDK checks passed for both Batangas and Quezon (acknowledged write, matching same-UID read-back, history and Continue gate). See [the November 8 report](Docs/DEV-03/November08/README.md). Those were unranked validation attempts; a ranked Quezon leaderboard row has not yet been exercised live.
 
 
 **SAVORPINOY: A 2D Interactive Culinary Simulator for Preserving CALABARZON Traditional Food Heritage**
@@ -11,7 +13,7 @@ The Unity project is **SavorPinoyPrototype/**. Open it with **Unity 6000.6.3f1**
 
 ## Current vertical slice
 
-MainMenu → RegionalTriviaHub → Batangas / Adobo sa Dilaw → cooking rules → Firebase Anonymous Authentication UID → atomic Realtime Database write → matching read-back → UI confirmation → Continue.
+MainMenu → RegionalTriviaHub → random first province (Batangas / Adobo sa Dilaw or Quezon / Pancit Habhab) → cooking rules → Firebase Anonymous Authentication UID → atomic Realtime Database write → matching read-back → UI confirmation → Continue.
 
 The scene has separate domain, UI, identity, persistence and query components. A nickname is display text only. Continue requires correct cooking **and** a confirmed write/read round trip under the same current UID. Local queueing and pending writes cannot complete the stage. My attempts and Top scores expose Loading, Empty and retryable Error states.
 

@@ -1,6 +1,8 @@
 # Exact Realtime Database contract
 
-> 3 November update: two-province trivia and preparation changes are described in [the November release notes](../DEV-03/November03/README.md). Quezon live saves require publication of the revised rules; October live evidence is historical.
+> 3 November update: two-province trivia and preparation changes are described in [the November release notes](../DEV-03/November03/README.md).
+>
+> 8 November update: the two-dish database rules were deployed to the Singapore instance and verified live. 20 live Unity SDK checks passed for both Batangas and Quezon (acknowledged write, matching same-UID read-back, history and Continue gate). See [the November 8 report](../DEV-03/November08/README.md). Those were unranked validation attempts; a ranked Quezon leaderboard row has not yet been exercised live.
 
 
 The backend is Realtime Database, not Firestore. Database URL:
@@ -17,7 +19,7 @@ The backend is Realtime Database, not Firestore. Database URL:
           "dish_id": "Batangas_AdoboSaDilaw",
           "score": 950,
           "is_correct": true,
-          "remarks": "batangas_slice_v1 | 1 stars",
+          "remarks": "batangas_prep_v2 | 1 stars",
           "created_at": "2026-10-27T10:00:00Z"
         }
       }
@@ -41,7 +43,7 @@ This is illustrative schema data, not a real saved record. `attemptId` is a node
 |---|---|---|
 | users key / leaderboard.uid | Firebase Auth UID | Displayed separately from nickname; only that UID writes |
 | display_name / player_name | 1–24 allowed nickname characters, at least one letter/number | Chef nickname / leaderboard label |
-| dish_id | String, exactly Batangas_AdoboSaDilaw | Stored recipe ID shown in query rows |
+| dish_id | String, Batangas_AdoboSaDilaw or Quezon_PancitHabhab | Stored recipe ID shown in query rows |
 | score | Integer 0–9375 | FinalScore; shown in results and queries |
 | is_correct | Boolean | Success phase; required with confirmed save to continue |
 | remarks | String matching current rubric and 0–3 stars | Skill evaluation metadata |

@@ -2,7 +2,9 @@
 
 # DEV-03 — first production sprite batch (31 October 2026)
 
-> 3 November update: two-province trivia and preparation changes are described in [the November release notes](November03/README.md). Quezon live saves require publication of the revised rules; October live evidence is historical.
+> 3 November update: two-province trivia and preparation changes are described in [the November release notes](November03/README.md).
+>
+> 8 November update: the two-dish database rules were deployed to the Singapore instance and verified live. 20 live Unity SDK checks passed for both Batangas and Quezon (acknowledged write, matching same-UID read-back, history and Continue gate). See [the November 8 report](November08/README.md). Those were unranked validation attempts; a ranked Quezon leaderboard row has not yet been exercised live.
 
 
 ## Implemented
