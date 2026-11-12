@@ -121,3 +121,7 @@ __pycache__/
 
 # Standalone workflow test project (not a generated Unity IDE project).
 !tools/vertical-slice/WorkflowTests.csproj
+
+# Unity crash-recovery scene copies (local only)
+[Ss]avor[Pp]inoy[Pp]rototype/Assets/_Recovery/
+[Ss]avor[Pp]inoy[Pp]rototype/Assets/_Recovery.meta

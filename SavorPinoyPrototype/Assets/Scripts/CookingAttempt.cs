@@ -6,8 +6,6 @@ public enum CookingPhase { Gather, Chop, HeatPot, Garlic, Turmeric, Meat, Sear, 
 
 public sealed class CookingAttempt
 {
-    public const string Rubric = "batangas_slice_v1";
-    public const int RequiredCuts = 9;
     public RecipePlan Recipe { get; }
     public PreparationProgress Preparation { get; }
     public int AdditionIndex { get; private set; }
