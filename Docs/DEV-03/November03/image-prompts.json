@@ -1,0 +1,20 @@
+{
+  "mode": "built-in image_gen",
+  "assets": [
+    {
+      "file": "PreparationAtlasV1.png",
+      "source": "exec-3c455f72-7953-4e5c-88ed-55f3502b5dd0.png",
+      "prompt": "Use case: stylized-concept. Production 2D Unity game sprite atlas, EXACT evenly spaced 4 columns x 3 rows, 12 isolated items, each centered inside its own equal square cell, transparent background everywhere, no grid lines, no labels, no lettering, no shadows outside objects. Match reference hand painted Filipino cooking game art: warm ochre browns, clear dark brown outlines, softly shaded cream food, slightly elevated three quarter view. Read cells left to right top to bottom: row 1: (1) four separate unpeeled garlic cloves with papery skins, (2) four separate clean peeled ivory garlic cloves, (3) one whole purple onion, (4) peeled onion halves on flat sides. Row 2: (5) one whole washed orange carrot, (6) neat pile of thin carrot matchsticks, (7) pile of shredded green cabbage, (8) single raw boneless pink chicken breast fillet WITHOUT plate. Row 3: (9) neat pile of uniformly cut raw chicken breast chunks without plate, (10) nest of dry golden miki noodles, (11) open empty dark seasoned metal wok viewed to show interior, two handles, NO stove or lid, (12) finished vegetable Pancit Habhab noodles with green cabbage and carrot strips served on a flat banana leaf, no meat, no plate. All twelve objects have ample transparent gutters and stay fully within equal cells. No background, no checkerboard, no props beyond the named subject. Entire square canvas."
+    },
+    {
+      "file": "EmptyPalayokV3.png",
+      "source": "exec-4c59ee6a-b81a-455d-8ce9-5d0ca43930bb.png",
+      "prompt": "Use case: precise-object-edit. Edit target: referenced open palayok cooking-game sprite. Preserve the exact terracotta two-handled pot silhouette, camera angle, proportions, rim, warm hand-painted shading and outline style. Remove all food, all yellow sauce, chicken, garlic and green leaves from inside. Replace only the interior with a visibly EMPTY clean dark earthenware cooking interior, gently shaded brown with subtle reflected light. Keep the pot fully open with no lid. Transparent background, no floor shadow, no halo, no text. This is an empty cooking container for a beginner game, ingredients will be layered separately in Unity."
+    },
+    {
+      "file": "PreparationDetailsV1.png",
+      "source": "exec-178894de-9da5-4d03-801c-41741a8ad1d1.png",
+      "prompt": "Use case: stylized-concept. Make one production Unity sprite atlas, exact 2 columns by 2 rows of equally sized square cells. Transparent canvas, no labels or grid lines, generous transparent gutters, every object centered and fully inside its cell. Match reference warm hand-painted 2D Filipino cooking game: clear dark brown outlines, gently shaded food, elevated three-quarter camera. Top left: a small pile of clean thin purple onion crescent slices, no whole onion. Top right: six flat peeled orange carrot planks, broad thin rectangular slices ready to be cut into narrow strips, no matchsticks. Bottom left: one fresh green cabbage wedge with a stable flat cut side visible, NOT shredded cabbage. Bottom right: one peeled fresh golden-orange turmeric root with smooth exposed flesh, no brown skin, no slices. No board, knife, plates, props, shadows beyond objects, text, watermarks or checkerboard. Preserve separation of all four cells."
+    }
+  ]
+}

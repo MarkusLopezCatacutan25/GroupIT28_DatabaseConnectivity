@@ -1,0 +1,28 @@
+{
+  "date": "2026-11-08",
+  "total": 97,
+  "cases": [
+    {
+      "case": "Quezon",
+      "passed": 31,
+      "scope": "ISOLATED UNITY INTERACTION TEST; NO LIVE AUTH OR DATABASE PROOF"
+    },
+    {
+      "case": "Batangas",
+      "passed": 30,
+      "scope": "ISOLATED UNITY INTERACTION TEST; NO LIVE AUTH OR DATABASE PROOF"
+    },
+    {
+      "case": "Hub",
+      "passed": 16,
+      "scope": "ISOLATED UNITY INTERACTION TEST; NO LIVE AUTH OR DATABASE PROOF"
+    },
+    {
+      "case": "Results",
+      "passed": 20,
+      "scope": "ISOLATED UNITY INTERACTION TEST; NO LIVE AUTH OR DATABASE PROOF"
+    }
+  ],
+  "live_status": "PASS: exact-instance rules deployed and read back; both dishes passed actual Unity SDK save/read-back and next-province gating.",
+  "live_checks_passed": 20
+}

@@ -118,3 +118,6 @@ InitTestScene*.unity*
 # Python preflight cache
 __pycache__/
 *.pyc
+
+# Standalone workflow test project (not a generated Unity IDE project).
+!tools/vertical-slice/WorkflowTests.csproj

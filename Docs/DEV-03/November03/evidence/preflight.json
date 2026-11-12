@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "counts": {
+    "files": 693,
+    "asset_files": 549,
+    "lfs_assets": 103,
+    "scenes": 3,
+    "dependencies": 56
+  },
+  "errors": []
+}

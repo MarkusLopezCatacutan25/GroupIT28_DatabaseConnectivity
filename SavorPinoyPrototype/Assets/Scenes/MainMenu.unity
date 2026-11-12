@@ -487,6 +487,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c293fb6d5e5a03c4fb5741de9460a4f8, type: 3}
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::MainMenuManager
+  firebaseSettings: {fileID: 11400000, guid: e24efd4f4d0d4fd5aef507a7db246b3f, type: 2}
 --- !u!1 &700100
 GameObject:
   m_ObjectHideFlags: 0

@@ -1531,7 +1531,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 569ca70da52d1ed4d8a981ee5eabef7a, type: 3}
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::SavorPinoyCookingManager
-  databaseUrl: 
+  firebaseSettings: {fileID: 11400000, guid: e24efd4f4d0d4fd5aef507a7db246b3f, type: 2}
   legacyCanvas: {fileID: 792119976}
   fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
 --- !u!114 &780000010
@@ -1554,6 +1554,9 @@ MonoBehaviour:
   knife: {fileID: 21300000, guid: 9cb0e1507d0b44f5895048b0dde64cde, type: 3}
   openPot: {fileID: 21300000, guid: fa499a77c53d49eaa8c1c7aafc57f9e5, type: 3}
   garlicClean: {fileID: 21300000, guid: 4b2fb41413f64fd09f8ae4883d8342e3, type: 3}
+  preparedGarlic: {fileID: 21300000, guid: 96df45d731b3411d8deb2cc1af6e52fe, type: 3}
+  preparedTurmeric: {fileID: 21300000, guid: e63fd3a86ba54e029795710cb110eea2, type: 3}
+  platedAdobo: {fileID: 21300000, guid: 68c4d4ec41f14e6dbcd8e8e8e2a50191, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

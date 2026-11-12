@@ -7,7 +7,11 @@ public enum CookingPhase { Gather, Chop, HeatPot, Garlic, Turmeric, Meat, Sear, 
 public sealed class CookingAttempt
 {
     public const string Rubric = "batangas_slice_v1";
-    public const int RequiredCuts = 6;
+    public const int RequiredCuts = 9;
+    public RecipePlan Recipe { get; }
+    public PreparationProgress Preparation { get; }
+    public int AdditionIndex { get; private set; }
+    public string ExpectedIngredient => AdditionIndex<Recipe.Additions.Length ? Recipe.Additions[AdditionIndex] : null;
     public const double SimmerSeconds = 12;
     public CookingPhase Phase { get; private set; } = CookingPhase.Gather;
     public bool TimedChallenge { get; }
@@ -42,8 +46,10 @@ public sealed class CookingAttempt
     private bool warningActive;
     private double frameAccumulator;
 
-    public CookingAttempt(bool correctTrivia, bool timedChallenge=true, double prepSeconds=60)
+    public CookingAttempt(bool correctTrivia, bool timedChallenge=true, double prepSeconds=120, RecipePlan recipe=null)
     {
+        Recipe=recipe??RecipePlan.Batangas; Preparation=new PreparationProgress(Recipe);
+        Message="Gather the highlighted ingredients, then choose the knife.";
         TimedChallenge=timedChallenge;
         Remaining = prepSeconds + (correctTrivia ? 15 : 0);
         Multiplier = correctTrivia ? 1.25f : 1f;
@@ -52,50 +58,70 @@ public sealed class CookingAttempt
     public void Gather(string id)
     {
         if (Terminal || Phase != CookingPhase.Gather) return;
-        if (id != "garlic" && id != "turmeric" && id != "chicken") { Error("Soy sauce is not used in this selected Adobo sa Dilaw recipe. Choose luyang dilaw.",100,5); return; }
+        if (Array.IndexOf(Recipe.Pantry,id)<0 || id=="soy") { Error("That ingredient is not part of this selected recipe.",100,5); return; }
         if (!gathered.Add(id)) { Message = "That ingredient is already selected."; return; }
-        Message = "Ingredients gathered: " + gathered.Count + "/3. Choose the knife when ready.";
+        Message = "Ingredients gathered: " + gathered.Count + "/"+(Recipe.IsHabhab?4:3)+". Choose the knife when ready.";
     }
     public void ChooseKnife()
     {
         if (Terminal || Phase != CookingPhase.Gather) return;
         KnifeSelected = true;
-        if (gathered.Count != 3) { Message = "Gather all three ingredients before chopping."; return; }
+        if (gathered.Count != (Recipe.IsHabhab?4:3)) { Message = "Gather all required recipe ingredients before preparation."; return; }
         Phase = CookingPhase.Chop;
-        Message = "Trace each marked line with the knife: three garlic cuts, then three turmeric preparation strokes.";
+        Message = Preparation.Current.Instruction;
     }
     public void ChooseWrongTool()
     {
         if (!Terminal && (Phase == CookingPhase.Gather || Phase == CookingPhase.Chop)) Error("Use the knife for this preparation step, not the spoon.",100,5);
     }
+    public void Prepare(string stepId)
+    {
+        if(Terminal||Phase!=CookingPhase.Chop||!Preparation.Gesture(stepId))return;
+        FinishPreparationStep();
+    }
+    private void FinishPreparationStep()
+    {
+        if(Preparation.Complete){Phase=CookingPhase.HeatPot;Message="Preparation complete. Warm the "+Recipe.Container.ToLowerInvariant()+" to the marked cooking band.";}
+        else Message=Preparation.Current.Instruction;
+    }
     public void Cut(double accuracy)
     {
-        if (Terminal || Phase != CookingPhase.Chop || !KnifeSelected) return;
+        if (Terminal || Phase != CookingPhase.Chop || !KnifeSelected || Preparation.Current==null || !Preparation.Current.IsCut) return;
         if (double.IsNaN(accuracy) || double.IsInfinity(accuracy)) return;
         accuracy = Math.Max(0, Math.Min(1, accuracy));
         if (accuracy < .75) { Error("Missed guide: start at the top marker and trace down the line.",100,0); return; }
-        accuracySum += accuracy; Cuts++;
-        if (Cuts == RequiredCuts) { Phase = CookingPhase.HeatPot; Message = "Preparation complete. Warm the palayok to the marked cooking band."; }
-        else Message = "Accepted cut " + Cuts + "/6. Follow the next guide.";
+        accuracySum += accuracy; Cuts++;Preparation.Cut();
+        FinishPreparationStep();
     }
     public void SetFlame(double value) { if (!Terminal && !double.IsNaN(value) && !double.IsInfinity(value)) Flame = Math.Max(0,Math.Min(1,value)); }
     public void AddToPot(string id)
     {
         if (Terminal || Phase < CookingPhase.HeatPot || Phase >= CookingPhase.Plate) return;
-        string expected = Phase == CookingPhase.Garlic ? "garlic" : Phase == CookingPhase.Turmeric ? "turmeric" : Phase == CookingPhase.Meat ? "chicken" : Phase == CookingPhase.Vinegar ? "vinegar" : null;
-        if (id != expected || expected == null) { Error("Wrong step. Follow the current recipe objective; repeating ingredients cannot earn points.",100,0); return; }
-        if (Phase != CookingPhase.Vinegar && Heat < 55) { Message = "The pot is too cool. Raise the flame before adding the next ingredient."; return; }
-        switch (Phase)
+        string expected=(Phase==CookingPhase.Garlic||Phase==CookingPhase.Turmeric||Phase==CookingPhase.Meat||Phase==CookingPhase.Vinegar)?ExpectedIngredient:null;
+        if(id!=expected||expected==null){Error("Follow the recipe order. Drag the highlighted ingredient into the cooking container.",100,0);return;}
+        if(Heat<55){Message="The container is too cool. Raise the flame first.";return;}
+        AdditionIndex++;
+        if(Recipe.IsHabhab)
         {
-            case CookingPhase.Garlic: Phase = CookingPhase.Turmeric; Message = "Garlic added. Add prepared turmeric next."; break;
-            case CookingPhase.Turmeric: Phase = CookingPhase.Meat; Message = "Turmeric added. Add chicken for the simplified searing step."; break;
-            case CookingPhase.Meat: Phase = CookingPhase.Sear; Message = "Sear the chicken at heat index 60-85 for 4 simulated seconds before adding vinegar."; break;
-            case CookingPhase.Vinegar: Phase = CookingPhase.Simmer; Message = "Keep heat within 60-85. Leave the vinegar simmer unstirred for 12 simulated seconds."; break;
+            if(AdditionIndex==1)Phase=CookingPhase.Turmeric;
+            else if(AdditionIndex==2)Phase=CookingPhase.Meat;
+            else if(AdditionIndex==3)Phase=CookingPhase.Sear;
+            else if(AdditionIndex==4)Phase=CookingPhase.Vinegar;
+            else Phase=CookingPhase.Simmer;
+            Message=Phase==CookingPhase.Sear?"Stir-fry the vegetables in the marked heat band.":Phase==CookingPhase.Simmer?"Toss gently and cook until the simulated noodle progress is complete.":"Next: "+RecipePlan.Name(ExpectedIngredient)+".";
+        }
+        else switch(Phase)
+        {
+            case CookingPhase.Garlic:Phase=CookingPhase.Turmeric;Message="Add prepared turmeric next.";break;
+            case CookingPhase.Turmeric:Phase=CookingPhase.Meat;Message="Add the portioned chicken.";break;
+            case CookingPhase.Meat:Phase=CookingPhase.Sear;Message="Keep the marked heat band for the simulated searing step.";break;
+            case CookingPhase.Vinegar:Phase=CookingPhase.Simmer;Message="Simmer the vinegar initially unstirred in this selected recipe.";break;
         }
     }
+
     public void Stir()
     {
-        if (Phase == CookingPhase.Simmer) Error("Premature stirring: leave this recipe's initial vinegar simmer unstirred. -500 points.",500,0);
+        if (Phase == CookingPhase.Simmer && !Recipe.IsHabhab) Error("Premature stirring: leave this recipe's initial vinegar simmer unstirred. -500 points.",500,0);
     }
     private void Error(string message,int penalty,double seconds)
     {
@@ -127,16 +153,16 @@ public sealed class CookingAttempt
         warningActive = hot;
         if (hot) ScorchExposure += dt;
         if (ScorchExposure >= 3) { Fail("Burnt dish: the pot stayed too hot. Lower heat earlier to account for retained heat."); return; }
-        if (Phase == CookingPhase.HeatPot && Heat >= 60) { Phase = CookingPhase.Garlic; Message = "Pot ready. Add garlic first."; }
+        if (Phase == CookingPhase.HeatPot && Heat >= 60) { Phase = CookingPhase.Garlic; Message = "Container ready. Drag the garlic into the opening."; }
         if (Phase == CookingPhase.Sear && Heat >= 60 && Heat <= 85)
         {
             SearProgress = Math.Min(4,SearProgress+dt);
-            if (SearProgress >= 4) { Phase = CookingPhase.Vinegar; Message = "Searing complete. Add native vinegar."; }
+            if (SearProgress >= 4) { Phase = CookingPhase.Vinegar; Message = Recipe.IsHabhab?"Vegetables ready. Add seasoned vegetable broth, then miki noodles.":"Searing complete. Add native vinegar."; }
         }
         if (Phase == CookingPhase.Simmer && Heat >= 60 && Heat <= 85)
         {
             SimmerProgress = Math.Min(SimmerSeconds,SimmerProgress+dt);
-            if (SimmerProgress >= SimmerSeconds) { Phase = CookingPhase.Plate; Message = "Simmer complete. Turn the flame off and plate your Adobo sa Dilaw."; }
+            if (SimmerProgress >= SimmerSeconds) { Phase = CookingPhase.Plate; Message = "Simulated cooking complete. Turn the flame off and serve "+Recipe.Dish+"."; }
         }
     }
     public void Plate()

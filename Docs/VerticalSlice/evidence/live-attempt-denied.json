@@ -1,0 +1,22 @@
+{
+    "scope": "LIVE SINGAPORE FIREBASE AUTH + RTDB / ISOLATED UNITY SDK TEST",
+    "passed": 6,
+    "uid": "",
+    "attemptId": "",
+    "record": {
+        "dish_id": "",
+        "score": 0,
+        "is_correct": false,
+        "remarks": "",
+        "created_at": ""
+    },
+    "checks": [
+        "real scene handoff composes separated components",
+        "challenge retains one-time trivia reward",
+        "actual pointer cuts advance the domain model",
+        "correct end-to-end cooking produces expected rubric score",
+        "correct cooking alone does not allow stage completion",
+        "save disables duplicate clicks and Continue"
+    ],
+    "error": "System.TimeoutException: Firebase acknowledgement + read-back | Could not confirm the Firebase save. Check sign-in and the deployed database rules. Retry keeps the same attempt ID.\r\n  at VerticalSliceValidationRunner.Wait (System.Func`1[TResult] ready, System.String label, System.Int32 milliseconds) [0x00038] in C:\\Users\\Markus\\Desktop\\CAPSTONE\\My project\\tmp\\continuation\\UnityValidation\\Assets\\Editor\\VerticalSliceValidationEntry.cs:42 \r\n  at VerticalSliceValidationRunner.Begin () [0x006fc] in C:\\Users\\Markus\\Desktop\\CAPSTONE\\My project\\tmp\\continuation\\UnityValidation\\Assets\\Editor\\VerticalSliceValidationEntry.cs:70  | ACTIVE SCENE: CookingStage | ROOTS: Main Camera,Canvas,EventSystem,KitchenCanvas"
+}

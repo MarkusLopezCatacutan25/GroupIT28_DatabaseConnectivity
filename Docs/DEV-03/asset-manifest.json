@@ -1,0 +1,26 @@
+[
+  {
+    "source_filename": "Garlic_Prepared_v01.png",
+    "source_sha256": "1b86b8412f5dd1888571867bfe1995eb27db1e075bbcf27fee2881c4292d3ead",
+    "production_filename": "GarlicPrepared_v02.png",
+    "production_sha256": "591d6c437efd3b3f51fbbd3e0f0b2275899fe750521b306171cdaca7f5a92227",
+    "source": "user-supplied Gemini artwork",
+    "processing": "built-in imagegen transparent cutout; original preserved"
+  },
+  {
+    "source_filename": "Turmeric_Prepared_v01.png",
+    "source_sha256": "adc9e89d82dace2e1acf058a0e8cf72f9bcfbfc620ec525f057661d026aaeeb6",
+    "production_filename": "TurmericPrepared_v02.png",
+    "production_sha256": "246917e3bb57175ad19121388b1e9f8b7858800342cd6604c6d4075f9c978fc1",
+    "source": "user-supplied Gemini artwork",
+    "processing": "built-in imagegen transparent cutout; original preserved"
+  },
+  {
+    "source_filename": "AdoboDilaw_Success_v01.png",
+    "source_sha256": "48b3fed0ab145ac40ec9a5e2fe5c42d0b714b85c6b8d8dbd5f64fcdc8d369a4f",
+    "production_filename": "AdoboDilawPlated_v02.png",
+    "production_sha256": "b46eacb4b1e23be18ecf180709b8e6b97a02f189d9888488f3678910c23c8f42",
+    "source": "user-supplied Gemini artwork",
+    "processing": "built-in imagegen transparent cutout; original preserved"
+  }
+]

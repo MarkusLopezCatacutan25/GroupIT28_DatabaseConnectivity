@@ -1,0 +1,54 @@
+{
+  "date": "2026-11-08",
+  "total": 133,
+  "cases": [
+    {
+      "case": "Batangas",
+      "passed": 48,
+      "scope": "ISOLATED UNITY INTERACTION TEST; NO LIVE AUTH OR DATABASE PROOF"
+    },
+    {
+      "case": "Quezon",
+      "passed": 49,
+      "scope": "ISOLATED UNITY INTERACTION TEST; NO LIVE AUTH OR DATABASE PROOF"
+    },
+    {
+      "case": "Results",
+      "passed": 20,
+      "scope": "ISOLATED UNITY INTERACTION TEST; NO LIVE AUTH OR DATABASE PROOF"
+    },
+    {
+      "case": "Hub",
+      "passed": 16,
+      "scope": "ISOLATED UNITY INTERACTION TEST; NO LIVE AUTH OR DATABASE PROOF"
+    }
+  ],
+  "source_hashes": [
+    {
+      "path": "SavorPinoyPrototype/Assets/Scripts/CookingFocusView.cs",
+      "sha256": "557ad8d844282ae288a115d42ce60c4f837b88e602c87d21c4d01eb75554693f"
+    },
+    {
+      "path": "SavorPinoyPrototype/Assets/Scripts/CookingResultView.cs",
+      "sha256": "555ac4a4026e4787c06f7001c663437481e227fb7e5e700419ad6e966b62de8e"
+    },
+    {
+      "path": "SavorPinoyPrototype/Assets/Scripts/CookingStageView.cs",
+      "sha256": "2c63b15cf9e4db98e1a100de6f364dd57b564921f8a0ab1df3ee22a3fceb13f9"
+    },
+    {
+      "path": "SavorPinoyPrototype/Assets/Scripts/CookingVesselPresentation.cs",
+      "sha256": "80ba06dda68dd7411083838a4152ba3a7907633e3fdbee272cc9eef0502d05cb"
+    },
+    {
+      "path": "SavorPinoyPrototype/Assets/Scripts/CookingVesselPresentation.cs.meta",
+      "sha256": "5bef7060c76413425986e89abccbca8593f1de0dee432454371e10041cd4698d"
+    },
+    {
+      "path": "SavorPinoyPrototype/Assets/Scripts/KitchenCueGraphic.cs",
+      "sha256": "7be7426f09aedc81dccffc1fd6d3a24e09afd426af9e43b56823e3b31fec7a5c"
+    }
+  ],
+  "visual_review": "Both province simmer overview/focused and burnt-result screenshots inspected; authored environment retained.",
+  "limitations": "Isolated desktop Unity checks; no live database requests, Android device measurements, or student/instructor acceptance."
+}
