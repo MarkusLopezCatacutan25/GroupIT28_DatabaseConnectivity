@@ -1,0 +1,51 @@
+PASS schema example validates
+PASS attempt payload has exactly the five specified fields
+PASS leaderboard payload has exactly five fields
+PASS display name is validated independently of UID
+PASS nickname cannot be an attempt identity
+PASS correct result alone does not enable Continue
+PASS Continue stays locked while write is pending
+PASS duplicate save click cannot create a second request
+PASS write acknowledgement alone waits for read-back
+PASS matching UID write/read round trip enables Continue
+PASS switching identity revokes the confirmed Continue gate
+PASS pending record cannot rebind to a different UID
+PASS confirmed incorrect attempt never enables Continue
+PASS permission denial shows retryable human-readable error
+PASS read-back mismatch cannot report success
+PASS write timeout cannot report success
+PASS late acknowledgement cannot unlock an expired UI operation
+PASS retry retains stable attempt ID and confirms a fresh round trip
+PASS disposed scene ignores late save completion
+PASS correctness cannot disagree with the record
+PASS failed authentication performs no database write
+PASS query exposes Loading and disables duplicate loads
+PASS query ignores duplicate clicks
+PASS empty query is a valid explicit Empty state
+PASS query failure exposes Error with retry available
+PASS query retry maps records to Success
+PASS malformed response is not treated as Empty
+PASS query timeout exposes retryable Error
+PASS late query cannot replace timeout feedback
+PASS corrupt pending file is preserved and cannot silently overwrite data
+PASS UID change clears private rows and invalidates in-flight queries
+PASS pending payload snapshots cannot change through the caller's record reference
+PASS a bound save workflow cannot relabel its correctness
+PASS timestamp model enforces exact valid UTC seconds
+PASS database score mapper rejects fractional and string scores
+SIGN-IN PASS recipe access is locked before explicit sign-in
+SIGN-IN PASS sign-in exposes Loading before awaiting authentication
+SIGN-IN PASS duplicate submit cannot start another authentication request
+SIGN-IN PASS only confirmed UID permits entry; display name stays separate
+SIGN-IN PASS a changed account invalidates the access decision
+SIGN-IN PASS invalid display text cannot trigger authentication
+SIGN-IN PASS optional empty name becomes Chef, never an identity
+SIGN-IN PASS authentication failure keeps entry locked and offers retry
+SIGN-IN PASS retry can recover after a sign-in error
+SIGN-IN PASS late authentication after timeout cannot open a scene
+SIGN-IN PASS Back cancels navigation even if native authentication later completes
+SIGN-IN PASS destroyed sign-in screen ignores late authentication
+SIGN-IN PASS an empty authentication result is rejected
+SIGN-IN PASS returned UID must match the SDK's current identity
+COMPLETE 14 sign-in workflow checks passed; test identity gateways only.
+COMPLETE 35 workflow checks passed; FAKE gateways only, not live backend evidence.

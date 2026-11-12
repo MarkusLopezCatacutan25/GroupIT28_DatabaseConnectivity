@@ -1,0 +1,27 @@
+{
+    "scope": "ISOLATED UNITY INTERACTION TEST; NO LIVE AUTH OR DATABASE PROOF",
+    "passed": 20,
+    "checks": [
+        "successful recipe waits for verified save",
+        "rating stars have a native UI renderer",
+        "permission failure explains why next province is locked",
+        "forced Continue event cannot bypass failed save",
+        "duplicate save click stays locked while saving",
+        "retry retains the failed attempt ID",
+        "acknowledged write still waits for read-back",
+        "matching read-back unlocks a clear next action",
+        "verified Continue opens heritage",
+        "heritage can reopen after closing it",
+        "verified Next province requests the other location through presenter",
+        "query loading disables both outer and inline reload actions",
+        "empty history remains an explicit valid state",
+        "query failure leaves an accessible retry action inside overlay",
+        "UID change revokes result progression",
+        "changed UID cannot reopen heritage",
+        "high-score failure reproduces four-mistake screenshot case",
+        "practice feedback explains the completion failure",
+        "saving a failed practice attempt does not claim level completion",
+        "retry preserves the current recipe instead of randomly switching province"
+    ],
+    "error": ""
+}

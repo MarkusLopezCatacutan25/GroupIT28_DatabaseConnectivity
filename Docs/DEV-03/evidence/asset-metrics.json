@@ -1,0 +1,44 @@
+[
+  {
+    "file": "GarlicPrepared_v02.png",
+    "dimensions": [
+      1678,
+      937
+    ],
+    "mode": "RGBA",
+    "alpha_extrema": [
+      0,
+      255
+    ],
+    "fully_transparent_fraction": 0.709,
+    "visible_magenta_pixels": 0
+  },
+  {
+    "file": "TurmericPrepared_v02.png",
+    "dimensions": [
+      1677,
+      938
+    ],
+    "mode": "RGBA",
+    "alpha_extrema": [
+      0,
+      255
+    ],
+    "fully_transparent_fraction": 0.7006,
+    "visible_magenta_pixels": 0
+  },
+  {
+    "file": "AdoboDilawPlated_v02.png",
+    "dimensions": [
+      1678,
+      937
+    ],
+    "mode": "RGBA",
+    "alpha_extrema": [
+      0,
+      255
+    ],
+    "fully_transparent_fraction": 0.5692,
+    "visible_magenta_pixels": 0
+  }
+]

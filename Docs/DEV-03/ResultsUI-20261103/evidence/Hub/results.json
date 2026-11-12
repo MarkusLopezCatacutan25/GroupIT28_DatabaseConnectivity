@@ -1,0 +1,23 @@
+{
+    "scope": "ISOLATED UNITY INTERACTION TEST; NO LIVE AUTH OR DATABASE PROOF",
+    "passed": 16,
+    "checks": [
+        "overview starts without a trivia timer",
+        "pin starts a renderable cloud curtain: Batangas",
+        "province preview preserves selected location: Batangas",
+        "trivia follows map transition in the authored right panel: Batangas",
+        "aspect-filled map has no empty blue bands: Batangas",
+        "wrong answer cannot enter cooking: Batangas",
+        "retry reopens question: Batangas",
+        "correct answer unlocks matching recipe: Batangas",
+        "pin starts a renderable cloud curtain: Quezon",
+        "province preview preserves selected location: Quezon",
+        "Quezon card has a native UI renderer",
+        "trivia follows map transition in the authored right panel: Quezon",
+        "aspect-filled map has no empty blue bands: Quezon",
+        "wrong answer cannot enter cooking: Quezon",
+        "retry reopens question: Quezon",
+        "correct answer unlocks matching recipe: Quezon"
+    ],
+    "error": ""
+}

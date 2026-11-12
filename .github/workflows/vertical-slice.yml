@@ -1,0 +1,27 @@
+name: Vertical Slice Contract and Rules
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '9.0.x'
+      - name: Verify save gate, UID binding and query states with test gateways
+        run: dotnet run --project tools/vertical-slice/WorkflowTests.csproj -- "$(mktemp -d)"
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - run: npm --prefix tools/vertical-slice install --ignore-scripts
+      - name: Verify UID partitioning and schema against local Firebase emulators
+        run: npm --prefix tools/vertical-slice run test:rules

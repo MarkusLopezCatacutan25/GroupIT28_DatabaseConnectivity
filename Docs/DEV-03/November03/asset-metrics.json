@@ -1,0 +1,41 @@
+[
+  {
+    "file": "EmptyPalayokV3.png",
+    "size": [
+      1536,
+      1024
+    ],
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      254
+    ],
+    "sha256": "6ad48187d17d7516ae3c6d592944b058f0779b661a3b6eec4e2356ae6e863789"
+  },
+  {
+    "file": "PreparationAtlasV1.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "sha256": "79cf71883cd9630baf01efee811f6df7fb9caaf97dee3b3de2426ff61083a9df"
+  },
+  {
+    "file": "PreparationDetailsV1.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      255
+    ],
+    "sha256": "9224389f3a1d86e6c7123ad79794f283823e06a02d3edaab271b3b856d694881"
+  }
+]

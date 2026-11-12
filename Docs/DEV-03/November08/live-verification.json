@@ -1,0 +1,27 @@
+{
+    "scope": "LIVE FIREBASE UNITY SDK / ISOLATED VALIDATION ACCOUNT / AUTOMATED CONNECTION CHECK, NOT STUDENT EVALUATION",
+    "passed": 20,
+    "checks": [
+        "client uses the expected Firebase project",
+        "live anonymous authentication resolves a real SDK UID",
+        "cooking model completes for Batangas",
+        "correct result is locked before live confirmation: Batangas",
+        "live write/read-back confirmed: Batangas / Confirmed / verified",
+        "live read-back contains matching dish ID: Batangas",
+        "verified live result enables Continue: Batangas",
+        "live history returns the exact new attempt: Batangas",
+        "verified result opens heritage: Batangas",
+        "heritage reopens after returning to result: Batangas",
+        "verified next-province route is available: Batangas",
+        "cooking model completes for Quezon",
+        "correct result is locked before live confirmation: Quezon",
+        "live write/read-back confirmed: Quezon / Confirmed / verified",
+        "live read-back contains matching dish ID: Quezon",
+        "verified live result enables Continue: Quezon",
+        "live history returns the exact new attempt: Quezon",
+        "verified result opens heritage: Quezon",
+        "heritage reopens after returning to result: Quezon",
+        "verified next-province route is available: Quezon"
+    ],
+    "error": ""
+}

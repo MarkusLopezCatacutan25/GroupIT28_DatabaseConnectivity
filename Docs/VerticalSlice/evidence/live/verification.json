@@ -1,0 +1,26 @@
+{
+  "scope": "LIVE SINGAPORE FIREBASE AUTH + RTDB / ISOLATED UNITY SDK TEST",
+  "passed": 17,
+  "checks": [
+    "real scene handoff composes separated components",
+    "challenge retains one-time trivia reward",
+    "actual pointer cuts advance the domain model",
+    "correct end-to-end cooking produces expected rubric score",
+    "correct cooking alone does not allow stage completion",
+    "save disables duplicate clicks and Continue",
+    "real Firebase Unity SDK write and read-back confirm save",
+    "Firebase Auth UID is independent of nickname",
+    "history shows Loading and disables duplicate clicks",
+    "UID-partitioned history maps the stored fields back to UI",
+    "a new repository instance retrieves the same actual attempt",
+    "atomic leaderboard row is retrieved and displayed",
+    "confirmed correct attempt unlocks Continue",
+    "identity change revokes Continue for the previous owner's attempt",
+    "real empty RTDB query renders valid Empty state",
+    "real cross-UID permission denial renders Error with retry",
+    "load retry recovers after an actual permission error"
+  ],
+  "error": "",
+  "identifiers_redacted": true,
+  "note": "Original live UID, attempt identifier and screenshots retained outside the repository in the private local task output."
+}

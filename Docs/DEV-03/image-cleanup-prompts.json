@@ -1,0 +1,9 @@
+{
+  "method": "built-in imagegen; background-extraction; transparent_background=true",
+  "common_prefix": "Use case: background-extraction. Edit target: the supplied image. Asset for an existing Unity 2D game. ",
+  "prompts": {
+    "GarlicPrepared_v02.png": "Remove only the solid bright magenta background from this prepared-garlic game sprite, including spaces between pieces. Preserve the exact cluster, count, ivory colors, brown outlines, painted shading, camera angle and complete silhouette. Do not redesign, add objects, plate, board or text. Deliver one tight, centered cutout with modest transparent padding and real RGBA alpha. No colored fringe, magenta spill, white halo, checkerboard or cast shadow.",
+    "TurmericPrepared_v02.png": "Remove only the baked gray-and-white checkerboard background from this prepared-turmeric game sprite, including gaps around slices. Preserve the exact orange turmeric interiors, brown skin, outlines, shape, camera angle, painted shading and all pieces. Do not add a board, bowl, text, or different ingredients. Deliver one centered cutout with modest transparent padding and genuine RGBA transparency. No checkerboard remnants, gray/white fringe, halo, or cast shadow.",
+    "AdoboDilawPlated_v02.png": "Remove only the baked gray-and-white checkerboard background from this plated Adobo sa Dilaw game sprite. Preserve the entire cream plate, golden turmeric sauce, chicken, garlic, existing brown outlines, perspective, color and painted shading exactly. Keep all plate edges intact. Do not add garnishes, text, props or shadows. Deliver one centered cutout with modest transparent padding and genuine RGBA transparency. No checkerboard remnants, white/gray halo or colored fringe."
+  }
+}

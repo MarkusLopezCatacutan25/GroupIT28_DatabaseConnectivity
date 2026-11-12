@@ -1,18 +1,24 @@
 using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public sealed class MainMenuManager : MonoBehaviour
 {
     private RectTransform options;
-    private bool loading;
-    private void Start(){AudioListener.volume=PlayerPrefs.GetFloat("SavorPinoy.Volume",1);}
+    [SerializeField] private FirebaseSettings firebaseSettings;
+    private ChefSignInController signIn;
+    private void Start()
+    {
+        AudioListener.volume=PlayerPrefs.GetFloat("SavorPinoy.Volume",1);ChefAccessSession.Clear();
+        Canvas canvas=FindAnyObjectByType<Canvas>();
+        if(!canvas){Debug.LogError("Main Menu needs a Canvas for sign-in.");return;}
+        signIn=gameObject.AddComponent<ChefSignInController>();
+        signIn.Initialize(canvas,new FirebaseAuthManager(new FirebaseBootstrap(firebaseSettings)));
+    }
     public void PlayGame()
     {
-        if(loading)return;
         if(!Application.CanStreamedLevelBeLoaded("RegionalTriviaHub")){Debug.LogError("RegionalTriviaHub is not enabled in the active Build Profile.");return;}
-        loading=true;GameSessionState.ResetBuffs();SceneManager.LoadScene("RegionalTriviaHub");
+        if(signIn)signIn.Show();
     }
     public void OpenOptions()
     {

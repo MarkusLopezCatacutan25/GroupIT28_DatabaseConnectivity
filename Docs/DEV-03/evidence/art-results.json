@@ -1,0 +1,24 @@
+{
+    "scope": "ISOLATED UNITY ART/PRESENTATION CHECKS ONLY; NO AUTH OR DATABASE PROOF",
+    "passed": 17,
+    "checks": [
+        "network composition is disabled only in the isolated art preview",
+        "scene references resolve all three new sprites",
+        "sprite import/alpha/size policy: GarlicPrepared_v02",
+        "sprite import/alpha/size policy: TurmericPrepared_v02",
+        "sprite import/alpha/size policy: AdoboDilawPlated_v02",
+        "uncut ingredients do not reveal prepared artwork",
+        "invalid stroke cannot reveal prepared garlic",
+        "first accepted cut reveals the prepared garlic sprite only",
+        "prepared garlic remains while raw turmeric becomes the next ingredient",
+        "turmeric preparation reveals the matching prepared sprite",
+        "six accepted strokes still drive the original preparation rules",
+        "the cooking tray uses prepared sprites instead of raw pantry images",
+        "existing cooking sequence still reaches success",
+        "success result uses the golden plated Adobo sa Dilaw artwork",
+        "new result artwork does not bypass confirmed-save gating",
+        "failure preview uses a real failed domain result",
+        "failed attempts do not display the successful plated dish"
+    ],
+    "error": ""
+}

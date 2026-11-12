@@ -1,0 +1,33 @@
+{
+    "scope": "UNITY SDK + LOCAL AUTH/RTDB EMULATORS ONLY",
+    "passed": 17,
+    "uid": "znVUlcGst1g8OOnnNQ3M8ggxxBSa",
+    "attemptId": "attempt_11772674daed487ea4e53ea516ad4d94",
+    "record": {
+        "dish_id": "Batangas_AdoboSaDilaw",
+        "score": 9375,
+        "is_correct": true,
+        "remarks": "batangas_slice_v1 | 3 stars",
+        "created_at": "2026-10-27T06:18:17Z"
+    },
+    "checks": [
+        "real scene handoff composes separated components",
+        "challenge retains one-time trivia reward",
+        "actual pointer cuts advance the domain model",
+        "correct end-to-end cooking produces expected rubric score",
+        "correct cooking alone does not allow stage completion",
+        "save disables duplicate clicks and Continue",
+        "real Firebase Unity SDK write and read-back confirm save",
+        "Firebase Auth UID is independent of nickname",
+        "history shows Loading and disables duplicate clicks",
+        "UID-partitioned history maps the stored fields back to UI",
+        "a new repository instance retrieves the same actual attempt",
+        "atomic leaderboard row is retrieved and displayed",
+        "confirmed correct attempt unlocks Continue",
+        "identity change revokes Continue for the previous owner's attempt",
+        "real empty RTDB query renders valid Empty state",
+        "real cross-UID permission denial renders Error with retry",
+        "load retry recovers after an actual permission error"
+    ],
+    "error": ""
+}

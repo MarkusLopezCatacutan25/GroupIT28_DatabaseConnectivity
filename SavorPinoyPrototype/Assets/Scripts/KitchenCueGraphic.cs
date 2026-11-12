@@ -5,9 +5,11 @@ using UnityEngine.UI;
 [RequireComponent(typeof(CanvasRenderer))]
 public sealed class KitchenCueGraphic : MaskableGraphic
 {
-    public bool Ring=true, Turmeric, Dial, Steam;
+    public bool Ring=true, Turmeric, Dial, Steam, Boiling, Smoke;
+    public float AnimationTime { get; private set; }
+    public static float SteamPhase(float seconds,int plume)=>Mathf.Repeat(seconds/3.2f+plume/6f,1);
     public int Pieces;
-    private void Update(){if(Steam)SetVerticesDirty();}
+    private void Update(){if(Steam||Boiling){AnimationTime+=Time.deltaTime;SetVerticesDirty();}}
     protected override void OnPopulateMesh(VertexHelper mesh)
     {
         mesh.Clear();
@@ -20,9 +22,17 @@ public sealed class KitchenCueGraphic : MaskableGraphic
         {
             for(int i=0;i<6;i++)
             {
-                float rise=(Time.unscaledTime*24+i*13)%80;
-                Ellipse(mesh,new Vector2((i%3-1)*24+Mathf.Sin(rise*.05f+i)*8,rise-40),10+rise*.08f,14+rise*.05f,0,new Color(1,.97f,.88f,.38f*(1-rise/80)));
+                float phase=SteamPhase(AnimationTime,i),rise=phase*80;
+                float alpha=Mathf.Sin(phase*Mathf.PI)*.38f;
+                Color tint=Smoke?new Color(.24f,.20f,.17f,alpha):new Color(1,.97f,.88f,alpha);
+                Ellipse(mesh,new Vector2((i%3-1)*24+Mathf.Sin(phase*Mathf.PI*2+i)*8,rise-40),10+rise*.08f,14+rise*.05f,0,tint);
             }
+            return;
+        }
+        if(Boiling)
+        {
+            for(int i=0;i<7;i++){float p=Mathf.Repeat(AnimationTime/1.4f+i/7f,1);float fade=Mathf.Sin(p*Mathf.PI);
+                Ellipse(mesh,new Vector2((i%4-1.5f)*rectTransform.rect.width*.2f,(i/4-.5f)*rectTransform.rect.height*.4f),4+p*8,2+p*4,1.5f,new Color(1,.91f,.57f,fade*.8f));}
             return;
         }
         if(Ring) Ellipse(mesh,Vector2.zero,rectTransform.rect.width*.48f,rectTransform.rect.height*.48f,6,color);

@@ -28,8 +28,8 @@ public static class PrototypeUI
     {
         Image image=Panel(name,parent,x,y,w,h,new Color(.98f,.95f,.86f));TMP_InputField input=image.gameObject.AddComponent<TMP_InputField>();
         RectTransform area=Rect("TextArea",input.transform,0,0,w-24,h-10);
-        TMP_Text value=Text("Text",area,"",0,0,w-24,h-10,28);value.alignment=TextAlignmentOptions.Left;value.richText=false;
-        TMP_Text placeholder=Text("Placeholder",area,"Chef alias",0,0,w-24,h-10,28);placeholder.color=new Color(.5f,.4f,.3f);placeholder.alignment=TextAlignmentOptions.Left;
+        TMP_Text value=Text("Text",area,"",0,0,w-24,h-10,28);value.alignment=TextAlignmentOptions.Center;value.richText=false;
+        TMP_Text placeholder=Text("Placeholder",area,"Chef alias",0,0,w-24,h-10,28);placeholder.color=new Color(.5f,.4f,.3f);placeholder.alignment=TextAlignmentOptions.Center;
         input.textViewport=area;input.textComponent=(TextMeshProUGUI)value;input.placeholder=placeholder;input.characterLimit=24;input.lineType=TMP_InputField.LineType.SingleLine;return input;
     }
     public static Slider HeatSlider(Transform parent,float x,float y,float w)

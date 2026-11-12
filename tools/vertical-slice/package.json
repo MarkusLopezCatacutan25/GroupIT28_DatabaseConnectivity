@@ -1,0 +1,12 @@
+{
+  "name": "savorpinoy-vertical-slice-tests",
+  "private": true,
+  "scripts": {
+    "test:rules": "cd ../.. && firebase emulators:exec --only auth,database --project demo-savorpinoy-vertical-slice \"node tools/vertical-slice/rules.test.cjs\""
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "6.0.0",
+    "firebase": "13.0.0",
+    "firebase-tools": "13.35.1"
+  }
+}

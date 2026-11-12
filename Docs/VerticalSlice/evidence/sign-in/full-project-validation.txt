@@ -1,0 +1,5 @@
+ISOLATED FULL PROJECT / UNITY 6000.6.3f1
+DEV-01 PASS: pinned Unity, text serialization, build scene order, Android SDK 26 and ARM64.
+DEV-01 PASS: all three source scenes open without missing scripts.
+DEV-01 PASS: first-import sprite defaults; authored reimport settings and GUID preserved.
+Unity exit code: 0

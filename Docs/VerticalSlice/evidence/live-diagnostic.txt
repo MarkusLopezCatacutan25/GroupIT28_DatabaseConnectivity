@@ -1,0 +1,9 @@
+LIVE FIREBASE DIAGNOSTIC / 27 OCTOBER 2026
+Exact configured instance: savorpinoy-database-daf6f-default-rtdb.asia-southeast1.firebasedatabase.app
+Anonymous Auth REST sign-in: successful; UID returned.
+Authenticated own display_name REST read: HTTP 401 Permission denied.
+Unauthenticated display_name REST read: HTTP 401 Permission denied.
+Unity SDK attempt: save denied; Continue remained locked.
+No successful live attempt round trip is claimed.
+Owner was guided to select the exact instance and publish the candidate rules.
+Tokens and API keys were kept out of diagnostic output.
