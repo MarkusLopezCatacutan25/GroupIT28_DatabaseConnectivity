@@ -42,6 +42,12 @@ public sealed class RegionalTriviaManager : MonoBehaviour
         foreach(TMP_Text text in designRoot.GetComponentsInChildren<TMP_Text>(true)){text.fontSharedMaterial=readableText;text.fontStyle=FontStyles.Bold;}
         regionTitleText.color=new Color(1,.95f,.79f);
     }
+    // Hover (mouse) and press (touch) feedback. Disabled buttons keep their own colours for answer results.
+    private static void Highlight(Button b)
+    {
+        if(!b.targetGraphic)b.targetGraphic=b.GetComponent<Image>();b.transition=Selectable.Transition.ColorTint;
+        ColorBlock tint=b.colors;tint.normalColor=Color.white;tint.highlightedColor=new Color(1,.88f,.58f);tint.pressedColor=new Color(.84f,.68f,.40f);tint.selectedColor=Color.white;tint.disabledColor=Color.white;tint.colorMultiplier=1;tint.fadeDuration=.08f;b.colors=tint;
+    }
     public TMP_FontAsset Font => questionText.font;
     public RectTransform Modal => modal;
     public void CancelTrivia()
@@ -54,9 +60,9 @@ public sealed class RegionalTriviaManager : MonoBehaviour
     public bool LoadTriviaForRegion(string region)
     {
         if(region!="CALABARZON" || started || !modal || !modal.gameObject.activeInHierarchy)return false;
-        GameSessionState.BeginRun(SelectedProvince);var bank=ProvinceTrivia.For(SelectedProvince);question=bank[Random.Range(0,bank.Length)];
+        GameSessionState.BeginRun(SelectedProvince);var bank=ProvinceTrivia.ForDish(GameSessionState.SelectedDishId);question=bank[Random.Range(0,bank.Length)];
         questionText.text=question.Prompt;remaining=30;resolved=false;loading=false;started=true;selectedChoice=-1;
-        feedbackBanner.text="Answer correctly to unlock "+RecipePlan.For(SelectedProvince).Dish+".";
+        feedbackBanner.text="Answer correctly to unlock "+GameSessionState.SelectedRecipe.Dish+".";
         for(int i=0;i<4;i++){optionButtons[i].interactable=true;optionButtons[i].GetComponentInChildren<TMP_Text>(true).text=question.Options[i];}
         ShowQuestion();proceedToKitchenBtn.interactable=true;proceedToKitchenBtn.gameObject.SetActive(false);timerText.text="Time: 30s";return true;
     }
@@ -68,11 +74,11 @@ public sealed class RegionalTriviaManager : MonoBehaviour
         Place(timerText.rectTransform,new Vector2(.5f,.5f),new Vector2(680,465),new Vector2(240,65));
         optionsRoot=optionButtons[0].transform.parent as RectTransform;
         Place(optionsRoot,new Vector2(.5f,.5f),new Vector2(0,-25),new Vector2(620,255));
-        foreach(Button b in optionButtons){b.transition=Selectable.Transition.None;TMP_Text label=b.GetComponentInChildren<TMP_Text>(true);label.fontSize=25;LayoutElement le=b.GetComponent<LayoutElement>();if(le){le.minHeight=57;le.preferredHeight=57;}}
+        foreach(Button b in optionButtons){Highlight(b);TMP_Text label=b.GetComponentInChildren<TMP_Text>(true);label.fontSize=25;LayoutElement le=b.GetComponent<LayoutElement>();if(le){le.minHeight=57;le.preferredHeight=57;}}
         answerHeading=PrototypeUI.Text("TriviaAnswerHeading",panel,"",0,60,620,60,33);answerHeading.fontStyle=FontStyles.Bold;answerHeading.gameObject.SetActive(false);
         rewardNote=PrototypeUI.Text("TriviaRewardNote",panel,"",0,-190,620,45,22);rewardNote.fontStyle=FontStyles.Bold;rewardNote.gameObject.SetActive(false);
         Place(proceedToKitchenBtn.transform as RectTransform,new Vector2(.5f,0),new Vector2(0,25),new Vector2(700,75));
-        proceedToKitchenBtn.GetComponentInChildren<TMP_Text>(true).fontSize=28;
+        proceedToKitchenBtn.GetComponentInChildren<TMP_Text>(true).fontSize=28;Highlight(proceedToKitchenBtn);
         ShowQuestion();
     }
     private void ShowQuestion()
@@ -136,7 +142,7 @@ public sealed class RegionalTriviaManager : MonoBehaviour
         if(outcome=="Correct"&&!GameSessionState.ResolveTrivia(question.Id,outcome))return;
         foreach(Button b in optionButtons)b.interactable=false;
         ShowAnswer(outcome);
-        proceedToKitchenBtn.GetComponentInChildren<TMP_Text>(true).text=outcome=="Correct"?"Start "+RecipePlan.For(SelectedProvince).Dish:"Try this question again";
+        proceedToKitchenBtn.GetComponentInChildren<TMP_Text>(true).text=outcome=="Correct"?"Start "+GameSessionState.SelectedRecipe.Dish:"Try this question again";
         proceedToKitchenBtn.gameObject.SetActive(true);
     }
     private void Proceed()

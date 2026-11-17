@@ -52,7 +52,7 @@
 
             "dish_id": {
 
-              ".validate": "newData.val() === 'Batangas_AdoboSaDilaw' || newData.val() === 'Quezon_PancitHabhab'"
+              ".validate": "newData.val() === 'Batangas_AdoboSaDilaw' || newData.val() === 'Batangas_Lomi' || newData.val() === 'Quezon_PancitHabhab' || newData.val() === 'Quezon_Hardinera'"
 
             },
 
@@ -132,7 +132,7 @@
 
         "dish_id": {
 
-          ".validate": "newData.val() === 'Batangas_AdoboSaDilaw' || newData.val() === 'Quezon_PancitHabhab'"
+          ".validate": "newData.val() === 'Batangas_AdoboSaDilaw' || newData.val() === 'Batangas_Lomi' || newData.val() === 'Quezon_PancitHabhab' || newData.val() === 'Quezon_Hardinera'"
 
         },
 

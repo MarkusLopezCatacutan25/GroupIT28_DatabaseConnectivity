@@ -25,7 +25,12 @@ public sealed class CookingResultPresenter : IDisposable
         id="attempt_"+runId;name=displayName;ranked=attempt.TimedChallenge;
         record=AttemptContract.From(attempt);save.SetResult(record.is_correct);view.Show(attempt,name);Refresh();
     }
-    public void Refresh(){view.RenderSave(save,identity.Uid);view.RenderQuery(query);}
+    public void Refresh()
+    {
+        // A verified save of a completed recipe earns that dish's Heritage Card (stored on this device).
+        if(record!=null&&record.is_correct&&save.CanContinue)HeritageCards.Unlock(record.dish_id);
+        view.RenderSave(save,identity.Uid);view.RenderQuery(query);
+    }
     public void IdentityChanged(){query.IdentityChanged();Refresh();}
     private async void Save(){if(record!=null)await save.SaveAsync(id,name,record,ranked);}
     private void Continue(){if(!save.CanContinue)return;if(!completed){completed=true;GameSessionState.QueueNextProvince();}view.Complete();}

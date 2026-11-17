@@ -15,6 +15,8 @@ const {ref,update,get,query,orderByChild,limitToLast,set,remove}=require('fireba
  };
  async function check(label,task){await task;results.push(label);console.log('PASS '+results.length+' '+label);}
  const quezon=id();await check('Quezon owner atomic write succeeds',assertSucceeds(update(ref(a),payload(quezon,{...valid,dish_id:'Quezon_PancitHabhab'}))));
+ const lomi=id();await check('Batangas Lomi owner atomic write succeeds',assertSucceeds(update(ref(a),payload(lomi,{...valid,dish_id:'Batangas_Lomi'}))));
+ const hardinera=id();await check('Quezon Hardinera owner atomic write succeeds',assertSucceeds(update(ref(a),payload(hardinera,{...valid,dish_id:'Quezon_Hardinera'}))));
  await check('Quezon private attempt read succeeds',assertSucceeds(get(ref(a,`users/chef-a/attempts/${quezon}`))));
  await check('dish of an existing attempt cannot change',assertFails(update(ref(a),payload(quezon,valid))));
  const key=id(),atomic=payload(key);

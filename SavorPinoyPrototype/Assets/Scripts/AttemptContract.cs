@@ -17,6 +17,6 @@ public static class AttemptContract
     public static AttemptRecord From(CookingAttempt attempt)
     {
         if(attempt==null || !attempt.Terminal)throw new InvalidOperationException("Finish the cooking attempt first.");
-        return new AttemptRecord{dish_id=attempt.Recipe.Id,score=attempt.FinalScore,is_correct=attempt.Phase==CookingPhase.Success,remarks=(attempt.Recipe.IsHabhab?"quezon_habhab_v1":"batangas_prep_v2")+" | "+attempt.Stars+" stars",created_at=UtcNow()};
+        return new AttemptRecord{dish_id=attempt.Recipe.Id,score=attempt.FinalScore,is_correct=attempt.Phase==CookingPhase.Success,remarks=attempt.Recipe.RemarksTag+" | "+attempt.Stars+" stars",created_at=UtcNow()};
     }
 }

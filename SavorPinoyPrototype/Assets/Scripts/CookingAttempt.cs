@@ -40,13 +40,13 @@ public sealed class CookingAttempt
     public float Multiplier { get; }
     private readonly HashSet<string> gathered = new HashSet<string>();
     private double accuracySum;
-    private double cookingRemaining = 75;
+    private double cookingRemaining;
     private bool warningActive;
     private double frameAccumulator;
 
     public CookingAttempt(bool correctTrivia, bool timedChallenge=true, double prepSeconds=120, RecipePlan recipe=null)
     {
-        Recipe=recipe??RecipePlan.Batangas; Preparation=new PreparationProgress(Recipe);
+        Recipe=recipe??RecipePlan.Batangas; Preparation=new PreparationProgress(Recipe); cookingRemaining=Recipe.CookSeconds;
         Message="Gather the highlighted ingredients, then choose the knife.";
         TimedChallenge=timedChallenge;
         Remaining = prepSeconds + (correctTrivia ? 15 : 0);
@@ -56,15 +56,15 @@ public sealed class CookingAttempt
     public void Gather(string id)
     {
         if (Terminal || Phase != CookingPhase.Gather) return;
-        if (Array.IndexOf(Recipe.Pantry,id)<0 || id=="soy") { Error("That ingredient is not part of this selected recipe.",100,5); return; }
+        if (Array.IndexOf(Recipe.Pantry,id)<0 || id==Recipe.Distractor) { Error("That ingredient is not part of this selected recipe.",100,5); return; }
         if (!gathered.Add(id)) { Message = "That ingredient is already selected."; return; }
-        Message = "Ingredients gathered: " + gathered.Count + "/"+(Recipe.IsHabhab?4:3)+". Choose the knife when ready.";
+        Message = "Ingredients gathered: " + gathered.Count + "/"+Recipe.Required+". Choose the knife when ready.";
     }
     public void ChooseKnife()
     {
         if (Terminal || Phase != CookingPhase.Gather) return;
         KnifeSelected = true;
-        if (gathered.Count != (Recipe.IsHabhab?4:3)) { Message = "Gather all required recipe ingredients before preparation."; return; }
+        if (gathered.Count != Recipe.Required) { Message = "Gather all required recipe ingredients before preparation."; return; }
         Phase = CookingPhase.Chop;
         Message = Preparation.Current.Instruction;
     }
@@ -99,27 +99,15 @@ public sealed class CookingAttempt
         if(id!=expected||expected==null){Error("Follow the recipe order. Drag the highlighted ingredient into the cooking container.",100,0);return;}
         if(Heat<55){Message="The container is too cool. Raise the flame first.";return;}
         AdditionIndex++;
-        if(Recipe.IsHabhab)
-        {
-            if(AdditionIndex==1)Phase=CookingPhase.Turmeric;
-            else if(AdditionIndex==2)Phase=CookingPhase.Meat;
-            else if(AdditionIndex==3)Phase=CookingPhase.Sear;
-            else if(AdditionIndex==4)Phase=CookingPhase.Vinegar;
-            else Phase=CookingPhase.Simmer;
-            Message=Phase==CookingPhase.Sear?"Stir-fry the vegetables in the marked heat band.":Phase==CookingPhase.Simmer?"Toss gently and cook until the simulated noodle progress is complete.":"Next: "+RecipePlan.Name(ExpectedIngredient)+".";
-        }
-        else switch(Phase)
-        {
-            case CookingPhase.Garlic:Phase=CookingPhase.Turmeric;Message="Add prepared turmeric next.";break;
-            case CookingPhase.Turmeric:Phase=CookingPhase.Meat;Message="Add the portioned chicken.";break;
-            case CookingPhase.Meat:Phase=CookingPhase.Sear;Message="Keep the marked heat band for the simulated searing step.";break;
-            case CookingPhase.Vinegar:Phase=CookingPhase.Simmer;Message="Simmer the vinegar initially unstirred in this selected recipe.";break;
-        }
+        // Same phase order for every recipe: add, add, ..., one sear/saute hold, add, ..., simmer/steam.
+        if(AdditionIndex>=Recipe.Additions.Length){Phase=CookingPhase.Simmer;Message=Recipe.SimmerHint;}
+        else if(AdditionIndex==Recipe.SearAfter){Phase=CookingPhase.Sear;Message=Recipe.SearHint;}
+        else{Phase=Recipe.SearAfter>0&&AdditionIndex<Recipe.SearAfter?(AdditionIndex==1?CookingPhase.Turmeric:CookingPhase.Meat):CookingPhase.Vinegar;Message="Next: "+RecipePlan.Name(ExpectedIngredient)+".";}
     }
 
     public void Stir()
     {
-        if (Phase == CookingPhase.Simmer && !Recipe.IsHabhab) Error("Premature stirring: leave this recipe's initial vinegar simmer unstirred. -500 points.",500,0);
+        if (Phase == CookingPhase.Simmer && !Recipe.StirAllowed) Error(Recipe.NoStirMessage,500,0);
     }
     private void Error(string message,int penalty,double seconds)
     {
@@ -147,15 +135,15 @@ public sealed class CookingAttempt
         // Abstract heat index, not Celsius or a physical cooking-safety model.
         Heat += ((20 + Flame * 90) - Heat) * dt / 4;
         bool hot = Heat > 95;
-        if (hot && !warningActive) { ScorchWarnings++; Message = "Scorch warning! Lower the flame early; the clay pot retains heat."; }
+        if (hot && !warningActive) { ScorchWarnings++; Message = "Scorch warning! Lower the flame early; the "+Recipe.Container.ToLowerInvariant()+" retains heat."; }
         warningActive = hot;
         if (hot) ScorchExposure += dt;
-        if (ScorchExposure >= 3) { Fail("Burnt dish: the pot stayed too hot. Lower heat earlier to account for retained heat."); return; }
-        if (Phase == CookingPhase.HeatPot && Heat >= 60) { Phase = CookingPhase.Garlic; Message = "Container ready. Drag the garlic into the opening."; }
+        if (ScorchExposure >= 3) { Fail("Burnt dish: the "+Recipe.Container.ToLowerInvariant()+" stayed too hot. Lower heat earlier to account for retained heat."); return; }
+        if (Phase == CookingPhase.HeatPot && Heat >= 60) { Phase = CookingPhase.Garlic; Message = "Container ready. Drag the "+RecipePlan.Name(ExpectedIngredient).ToLowerInvariant()+" into the opening."; }
         if (Phase == CookingPhase.Sear && Heat >= 60 && Heat <= 85)
         {
             SearProgress = Math.Min(4,SearProgress+dt);
-            if (SearProgress >= 4) { Phase = CookingPhase.Vinegar; Message = Recipe.IsHabhab?"Vegetables ready. Add seasoned vegetable broth, then miki noodles.":"Searing complete. Add native vinegar."; }
+            if (SearProgress >= 4) { Phase = CookingPhase.Vinegar; Message = Recipe.SearLabel.Substring(0,1)+Recipe.SearLabel.Substring(1).ToLowerInvariant()+" complete. Next: "+RecipePlan.Name(ExpectedIngredient)+"."; }
         }
         if (Phase == CookingPhase.Simmer && Heat >= 60 && Heat <= 85)
         {

@@ -29,6 +29,13 @@ public sealed class RegionalMapZoomManager : MonoBehaviour
         if(initialized)return;initialized=true;trivia=owner;root=safeRoot;
         PrototypeUI.Font=owner.Font;
         RectTransform split=PrototypeUI.Rect("SplitContainer",root,0,-35,1760,880);
+        // Border strips only, so nothing is painted behind the map or the trivia card.
+        for(int edge=0;edge<4;edge++)
+        {
+            bool horizontal=edge<2;float sign=edge%2==0?1:-1;
+            PrototypeUI.Panel("MapFrameWood"+edge,split,horizontal?0:sign*887,horizontal?sign*447:0,horizontal?1788:14,horizontal?14:908,new Color(.24f,.115f,.055f)).raycastTarget=false;
+            PrototypeUI.Panel("MapFrameGold"+edge,split,horizontal?0:sign*882,horizontal?sign*442:0,horizontal?1768:4,horizontal?4:888,new Color(.93f,.74f,.38f)).raycastTarget=false;
+        }
         // Manual anchors own the animated split; a LayoutGroup would override the tween.
         left=PrototypeUI.Panel("LeftMapPanel",split,0,0,1760,880,new Color(.20f,.32f,.28f)).rectTransform;
         left.gameObject.AddComponent<RectMask2D>();
@@ -40,7 +47,9 @@ public sealed class RegionalMapZoomManager : MonoBehaviour
         calabarzonPinBtn.image.color=Color.clear;
         ((RectTransform)calabarzonPinBtn.transform).sizeDelta=new Vector2(230,300);
         if(regionPin){Image pin=PrototypeUI.Panel("PinArtwork",calabarzonPinBtn.transform,0,65,190,150,Color.white);pin.sprite=regionPin;pin.preserveAspect=true;pin.raycastTarget=false;calabarzonPinBtn.targetGraphic=pin;}
-        var pinLabel=calabarzonPinBtn.GetComponentInChildren<TMPro.TMP_Text>();pinLabel.text="CALABARZON";pinLabel.fontSize=21;pinLabel.rectTransform.anchoredPosition=new Vector2(0,-35);pinLabel.rectTransform.sizeDelta=new Vector2(230,40);
+        var pinLabel=calabarzonPinBtn.GetComponentInChildren<TMPro.TMP_Text>();pinLabel.text="CALABARZON";pinLabel.fontSize=21;pinLabel.rectTransform.anchoredPosition=new Vector2(0,-35);pinLabel.rectTransform.sizeDelta=new Vector2(230,40);pinLabel.fontStyle=TMPro.FontStyles.Bold;
+        KitchenCueGraphic regionGlow=PrototypeUI.Rect("RegionGlow",calabarzonPinBtn.transform,0,-5,230,170).gameObject.AddComponent<KitchenCueGraphic>();regionGlow.color=new Color(1,.86f,.30f);regionGlow.raycastTarget=false;regionGlow.transform.SetAsFirstSibling();regionGlow.enabled=false;
+        HoverHighlight pinHover=calabarzonPinBtn.gameObject.AddComponent<HoverHighlight>();Transform pinArt=calabarzonPinBtn.transform.Find("PinArtwork");pinHover.Target=pinArt?(RectTransform)pinArt:null;pinHover.Glow=regionGlow;pinHover.Scale=1.18f;
         right=PrototypeUI.Rect("RightTriviaPanel",split,440,0,880,880);
         authoredModal.SetParent(right,false);owner.PlaceSplitModal(authoredModal);
         rightGroup=right.gameObject.AddComponent<CanvasGroup>();
@@ -52,6 +61,7 @@ public sealed class RegionalMapZoomManager : MonoBehaviour
         recipeTitle=PrototypeUI.Text("RecipeTitle",recipe,"Adobo sa Dilaw",0,-100,420,65,32);
         recipeRegion=PrototypeUI.Text("RecipeRegion",recipe,"Batangas / Region IV-A",0,-170,410,55,25);
         selectRecipeBtn=PrototypeUI.Button("ChooseBatangas",recipe,"Answer trivia to unlock",0,-255,380,70,SelectRecipe);
+        HoverHighlight unlockHover=selectRecipeBtn.gameObject.AddComponent<HoverHighlight>();unlockHover.Target=(RectTransform)selectRecipeBtn.transform;unlockHover.Scale=1.07f;
         backToOverviewBtn=PrototypeUI.Button("BackToOverview",root,"Back to Overview",-670,465,350,65,ResetMapZoom);
         cloud=PrototypeUI.Rect("TravelCloudCurtain",root,0,-35,1840,900);
         cloud.gameObject.AddComponent<TravelCloudGraphic>().raycastTarget=false;cloudGroup=cloud.gameObject.AddComponent<CanvasGroup>();cloud.gameObject.SetActive(false);
@@ -70,18 +80,21 @@ public sealed class RegionalMapZoomManager : MonoBehaviour
         if(!initialized||State!=ViewState.Overview||suspended)return;
         State=ViewState.Zooming;calabarzonPinBtn.interactable=false;
         trivia.SelectProvince(GameSessionState.ChooseProvince());
-        recipeTitle.text=RecipePlan.For(trivia.SelectedProvince).Dish;recipeRegion.text=trivia.SelectedProvince+" / CALABARZON";
-        Image cardImage=recipe.GetComponent<Image>();cardImage.enabled=trivia.SelectedProvince=="Batangas";
-        var old=recipe.Find("QuezonRecipePaper");if(old)old.gameObject.SetActive(trivia.SelectedProvince=="Quezon");
-        else if(trivia.SelectedProvince=="Quezon"){
-            var paper=PrototypeUI.Panel("QuezonRecipePaper",recipe,0,0,450,650,Color.clear);paper.raycastTarget=false;paper.transform.SetAsFirstSibling();
+        RecipePlan dish=GameSessionState.SelectedRecipe;
+        recipeTitle.text=dish.Dish;recipeRegion.text=trivia.SelectedProvince+" / CALABARZON";
+        // The supplied Adobo card art is used as-is; every other dish gets a framed card with its own dish art.
+        bool authoredCard=dish==RecipePlan.Batangas&&recipePreviewCard;
+        Image cardImage=recipe.GetComponent<Image>();cardImage.enabled=authoredCard;
+        var old=recipe.Find("DishRecipePaper");if(old)Destroy(old.gameObject);
+        if(!authoredCard){
+            var paper=PrototypeUI.Panel("DishRecipePaper",recipe,0,0,450,650,Color.clear);paper.raycastTarget=false;paper.transform.SetAsFirstSibling();
             var kitchenArt=gameObject.GetComponent<KitchenArt>();if(!kitchenArt)kitchenArt=gameObject.AddComponent<KitchenArt>();
-            kitchenArt.Draw("HabhabPreview",paper.transform,kitchenArt.DishSprite(RecipePlan.Quezon),0,150,410,270);
-            PrototypeUI.Text("HabhabVariant",paper.transform,"Vegetable learning adaptation",0,-35,410,40,18);
+            kitchenArt.Draw("DishPreview",paper.transform,kitchenArt.DishSprite(dish),0,150,410,270);
+            if(dish==RecipePlan.Quezon)PrototypeUI.Text("HabhabVariant",paper.transform,"Vegetable learning adaptation",0,-35,410,40,18);
         }
-        Transform cardFrame=recipe.Find("QuezonCardFrame");
-        if(!cardFrame&&trivia.SelectedProvince=="Quezon"){cardFrame=PrototypeUI.Rect("QuezonCardFrame",recipe,0,0,540,720);cardFrame.gameObject.AddComponent<RecipeCardFrameGraphic>().raycastTarget=false;cardFrame.SetAsFirstSibling();}
-        if(cardFrame)cardFrame.gameObject.SetActive(trivia.SelectedProvince=="Quezon");
+        Transform cardFrame=recipe.Find("DishCardFrame");
+        if(!cardFrame){cardFrame=PrototypeUI.Rect("DishCardFrame",recipe,0,0,540,720);cardFrame.gameObject.AddComponent<RecipeCardFrameGraphic>().raycastTarget=false;}
+        cardFrame.SetAsFirstSibling();cardFrame.gameObject.SetActive(!authoredCard);
         focusPosition=-MapPoint()*2.2f;transition=StartCoroutine(Zoom());
     }
     private IEnumerator Zoom()

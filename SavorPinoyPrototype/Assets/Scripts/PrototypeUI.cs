@@ -40,3 +40,23 @@ public static class PrototypeUI
         Image handle=Panel("FlameHandle",handleArea,0,0,52,60,new Color(.96f,.50f,.12f));slider.handleRect=handle.rectTransform;slider.targetGraphic=handle;slider.minValue=0;slider.maxValue=1;slider.value=0;return slider;
     }
 }
+
+// Hover (mouse) and press (touch) feedback for map pins and buttons. Presentation only.
+public sealed class HoverHighlight : MonoBehaviour, UnityEngine.EventSystems.IPointerEnterHandler, UnityEngine.EventSystems.IPointerExitHandler, UnityEngine.EventSystems.IPointerDownHandler, UnityEngine.EventSystems.IPointerUpHandler
+{
+    public RectTransform Target;
+    public Graphic Glow;
+    public float Scale=1.12f;
+    private bool over,down;
+    public void OnPointerEnter(UnityEngine.EventSystems.PointerEventData eventData){over=true;Apply();}
+    public void OnPointerExit(UnityEngine.EventSystems.PointerEventData eventData){over=false;Apply();}
+    public void OnPointerDown(UnityEngine.EventSystems.PointerEventData eventData){down=true;Apply();}
+    public void OnPointerUp(UnityEngine.EventSystems.PointerEventData eventData){down=false;Apply();}
+    private void OnDisable(){over=down=false;Apply();}
+    private void Apply()
+    {
+        bool on=over||down;Selectable control=GetComponent<Selectable>();if(control&&!control.IsInteractable())on=false;
+        if(Target)Target.localScale=Vector3.one*(on?Scale:1);
+        if(Glow)Glow.enabled=on;
+    }
+}

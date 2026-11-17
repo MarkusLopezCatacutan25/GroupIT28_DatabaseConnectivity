@@ -8,7 +8,7 @@ public sealed class RatingStarsGraphic : MaskableGraphic
     public void SetStars(int value){stars=Mathf.Clamp(value,0,3);SetVerticesDirty();}
     protected override void OnPopulateMesh(VertexHelper mesh)
     {
-        mesh.Clear();for(int i=0;i<3;i++){Vector2 center=new Vector2((i-1)*100,0);Star(mesh,center,42,new Color(.36f,.20f,.06f));Star(mesh,center,35,i<stars?new Color(1,.71f,.18f):new Color(.79f,.70f,.51f));}
+        mesh.Clear();for(int i=0;i<3;i++){Vector2 center=new Vector2((i-1)*98,0);Star(mesh,center,38,new Color(.36f,.20f,.06f));Star(mesh,center,31,i<stars?new Color(1,.71f,.18f):new Color(.79f,.70f,.51f));}
     }
     private static void Star(VertexHelper mesh,Vector2 center,float radius,Color tint)
     {

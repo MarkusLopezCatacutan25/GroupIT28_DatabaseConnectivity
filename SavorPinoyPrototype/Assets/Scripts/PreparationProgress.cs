@@ -2,11 +2,11 @@ using System;
 
 public sealed class PreparationStep
 {
-    public readonly string Id,Ingredient,Title,Instruction;
+    public readonly string Id,Ingredient,Title,Instruction,Target;
     public readonly bool IsCut;
     public readonly int Repetitions;
-    public PreparationStep(string id,string ingredient,string title,string instruction,bool cut,int repetitions)
-    {Id=id;Ingredient=ingredient;Title=title;Instruction=instruction;IsCut=cut;Repetitions=repetitions;}
+    public PreparationStep(string id,string ingredient,string title,string instruction,bool cut,int repetitions,string target=null)
+    {Id=id;Ingredient=ingredient;Title=title;Instruction=instruction;IsCut=cut;Repetitions=repetitions;Target=target;}
 }
 // Ordered preparation state; UI gestures cannot skip peeling, meat separation or cleanup.
 public sealed class PreparationProgress

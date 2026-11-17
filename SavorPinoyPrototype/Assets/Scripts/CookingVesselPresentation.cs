@@ -10,7 +10,7 @@ public static class CookingVesselPresentation
     public static Color FoodTint(CookingAttempt attempt)
     {
         if(Burnt(attempt))return new Color(.19f,.12f,.075f);
-        if(!attempt.Recipe.IsHabhab&&attempt.AdditionIndex>=3)
+        if(attempt.Recipe.SearAfter>0&&attempt.AdditionIndex>=attempt.Recipe.SearAfter&&!attempt.Recipe.UsesWok)
             return Color.Lerp(new Color(.87f,.78f,.64f),new Color(.88f,.65f,.29f),Mathf.Clamp01((float)(attempt.SearProgress/4)));
         return Color.Lerp(Color.white,new Color(1,.88f,.62f),Mathf.Clamp01((float)(attempt.SimmerProgress/CookingAttempt.SimmerSeconds)));
     }

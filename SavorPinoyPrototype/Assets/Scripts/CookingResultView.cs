@@ -28,19 +28,19 @@ public sealed class CookingResultView
 
     public CookingResultView(CookingStageView theme,KitchenArt art)
     {
-        this.theme=theme;recipe=RecipePlan.For(GameSessionState.SelectedProvince);
+        this.theme=theme;recipe=GameSessionState.SelectedRecipe;
         panel=PrototypeUI.Panel("ResultOverlay",theme.Design,0,0,1800,1000,Ink).rectTransform;
         art.Draw("ResultKitchenBackdrop",panel,art.Environment,0,0,1800,1000,false).color=new Color(.48f,.36f,.25f);
         heading=theme.Label("ResultHeading",panel,"",0,440,1660,85,42);
         Card("SkillsParchment",panel,-410,0,900,730);Card("NextStepCard",panel,510,0,680,730);
-        Text("ResultRecipe",panel,recipe.Dish,-410,315,810,65,36,true);
-        chef=Text("ResultChef",panel,"",-410,265,810,45,25);
+        Text("ResultRecipe",panel,recipe.Dish,-410,300,810,60,36,true);
+        chef=Text("ResultChef",panel,"",-410,250,810,40,26);
         platedDish=art.Draw("PlatedAdobo",panel,art.DishSprite(recipe),-645,135,350,235);
-        practiceImage=art.Draw("PracticeCookingIllustration",panel,recipe.IsHabhab?art.Atlas(10):art.EmptyPalayok,-645,135,330,220);
-        burntFood=art.Draw("BurntFoodIllustration",panel,art.IngredientSprite(recipe.IsHabhab?"noodles":"chicken",true),-645,155,155,80);burntFood.raycastTarget=false;
-        stars=PrototypeUI.Rect("ResultStars",panel,-210,210,310,85).gameObject.AddComponent<RatingStarsGraphic>();stars.raycastTarget=false;
-        score=Text("ResultScore",panel,"",-210,125,370,95,60,true);
-        mode=Text("ResultMode",panel,"",-210,40,370,60,23);
+        practiceImage=art.Draw("PracticeCookingIllustration",panel,art.Vessel(recipe),-645,135,330,220);
+        burntFood=art.Draw("BurntFoodIllustration",panel,art.IngredientSprite(recipe.MainIngredient,true),-645,155,155,80);burntFood.raycastTarget=false;
+        stars=PrototypeUI.Rect("ResultStars",panel,-210,180,310,85).gameObject.AddComponent<RatingStarsGraphic>();stars.raycastTarget=false;
+        score=Text("ResultScore",panel,"",-210,95,370,80,56,true);
+        mode=Text("ResultMode",panel,"",-210,25,420,60,24);
         string[] names={"Knife accuracy","Recipe steps","Heat control"};
         for(int i=0;i<3;i++){
             float y=-35-i*80;
@@ -50,12 +50,12 @@ public sealed class CookingResultView
             var fill=PrototypeUI.Panel("SkillFill"+i,track.transform,0,0,780,13,Green);fill.raycastTarget=false;
             skillFills[i]=fill.rectTransform;skillFills[i].anchorMin=skillFills[i].anchorMax=skillFills[i].pivot=new Vector2(0,.5f);skillFills[i].anchoredPosition=Vector2.zero;
         }
-        Text("SkillScoresCaption",panel,"Skill points: each bar is out of 2,500",-410,-255,800,38,22);
-        Text("TimeSummary",panel,"",-410,-310,810,62,24);
-        Text("NextStepHeading",panel,"WHAT HAPPENS NEXT?",510,310,590,55,29,true);
-        statusHeading=Text("ResultStatusHeading",panel,"",510,235,580,90,34,true);
-        status=Text("SaveStatus",panel,"",510,120,570,145,27);
-        steps=Text("CompletionSteps",panel,"",510,-55,560,140,25);steps.alignment=TextAlignmentOptions.Left;
+        Text("SkillScoresCaption",panel,"Each bar shows points earned out of 2,500",-410,-255,800,38,24);
+        Text("TimeSummary",panel,"",-410,-312,810,66,25);
+        Text("NextStepHeading",panel,"WHAT HAPPENS NEXT?",510,305,620,65,38,true);
+        statusHeading=Text("ResultStatusHeading",panel,"",510,232,580,70,27,true);
+        status=Text("SaveStatus",panel,"",510,120,580,150,28);
+        steps=Text("CompletionSteps",panel,"",510,-55,560,140,27);steps.alignment=TextAlignmentOptions.Left;
         SaveButton=Primary("SaveAttemptButton",panel,"Save result",510,-210,570,80,()=>SaveRequested?.Invoke());
         ContinueButton=Primary("ContinueButton",panel,"Save first to continue",510,-300,570,70,()=>ContinueRequested?.Invoke());ContinueButton.interactable=false;
         Primary("RetryStage",panel,"Try recipe again",-650,-425,340,80,()=>RetryRequested?.Invoke());
@@ -66,7 +66,7 @@ public sealed class CookingResultView
         panel.gameObject.SetActive(false);heritage.gameObject.SetActive(false);
     }
     private TMP_Text Text(string name,Transform parent,string value,float x,float y,float w,float h,int size,bool bold=false)
-    {var text=PrototypeUI.Text(name,parent,value,x,y,w,h,size);text.color=Ink;if(bold)text.fontStyle=FontStyles.Bold;return text;}
+    {var text=PrototypeUI.Text(name,parent,value,x,y,w,h,size);text.color=bold?Ink:new Color(.16f,.07f,.02f);text.fontStyle=FontStyles.Bold;return text;}
     private static void Card(string name,Transform parent,float x,float y,float w,float h)
     {PrototypeUI.Rect(name,parent,x,y,w,h).gameObject.AddComponent<RecipeCardFrameGraphic>().raycastTarget=false;}
     private Button Primary(string name,Transform parent,string label,float x,float y,float w,float h,UnityEngine.Events.UnityAction action)
@@ -99,7 +99,7 @@ public sealed class CookingResultView
         art.Draw("HeritageDish",heritage,art.DishSprite(recipe),-485,80,510,340);
         Text("HeritageRecipe",heritage,recipe.Dish+"\n"+recipe.Province+" / CALABARZON",-485,-165,520,110,30,true);
         var body=Text("HeritageBody",heritage,recipe.Heritage,280,55,870,410,29);body.alignment=TextAlignmentOptions.Left;
-        nextProvinceButton=Primary("NextProvince",heritage,"Explore "+(recipe.IsHabhab?"Batangas":"Quezon"),230,-295,600,90,()=>NextProvinceRequested?.Invoke());
+        nextProvinceButton=Primary("NextProvince",heritage,"Explore "+(recipe.Province=="Quezon"?"Batangas":"Quezon"),230,-295,600,90,()=>NextProvinceRequested?.Invoke());
         theme.ActionButton("CloseHeritage",heritage,"Back to result",-440,-295,500,90,()=>heritage.gameObject.SetActive(false));
     }
     public void Show(CookingAttempt attempt,string name)
@@ -109,10 +109,10 @@ public sealed class CookingResultView
         platedDish.gameObject.SetActive(correctResult);practiceImage.gameObject.SetActive(!correctResult);
         bool burnt=CookingVesselPresentation.Burnt(attempt);practiceImage.color=burnt?CookingVesselPresentation.VesselTint(attempt):Color.white;
         burntFood.gameObject.SetActive(burnt);burntFood.color=CookingVesselPresentation.FoodTint(attempt);stars.SetStars(attempt.Stars);
-        score.text=attempt.FinalScore.ToString("N0")+" pts";mode.text=attempt.Stars+" / 3 stars / "+(attempt.TimedChallenge?"timed challenge":"guided practice")+"\n"+(attempt.TimedChallenge?"Ranked":"Not ranked")+" / trivia bonus "+attempt.Multiplier.ToString("0.##")+"x";
+        score.text=attempt.FinalScore.ToString("N0")+" pts";mode.text=attempt.Stars+" of 3 stars  |  "+(attempt.TimedChallenge?"Timed challenge":"Guided practice")+"\n"+(attempt.TimedChallenge?"Ranked score":"Practice, not ranked")+"  |  Trivia bonus x"+attempt.Multiplier.ToString("0.##");
         int[] values={attempt.CuttingScore,attempt.SequenceScore,attempt.ThermalScore};
-        for(int i=0;i<3;i++){skillFills[i].sizeDelta=new Vector2(780*Mathf.Clamp01(values[i]/2500f),13);skillValues[i].text=i==0?Mathf.RoundToInt((float)attempt.CuttingAccuracy*100)+"% accuracy":i==1?attempt.Mistakes+" mistakes":attempt.ScorchWarnings+" heat warnings";}
-        panel.Find("TimeSummary").GetComponent<TMP_Text>().text="Preparation "+Clock(attempt.PrepElapsed)+"   |   Cooking "+Clock(attempt.CookElapsed)+"\nPenalties: "+attempt.Penalties+" pts";
+        for(int i=0;i<3;i++){skillFills[i].sizeDelta=new Vector2(780*Mathf.Clamp01(values[i]/2500f),13);skillValues[i].text=i==0?Mathf.RoundToInt((float)attempt.CuttingAccuracy*100)+"% accurate":i==1?(attempt.Mistakes==0?"No mistakes":attempt.Mistakes==1?"1 mistake":attempt.Mistakes+" mistakes"):(attempt.ScorchWarnings==0?"No overheating":attempt.ScorchWarnings==1?"1 heat warning":attempt.ScorchWarnings+" heat warnings");}
+        panel.Find("TimeSummary").GetComponent<TMP_Text>().text="Preparation time "+Clock(attempt.PrepElapsed)+"   |   Cooking time "+Clock(attempt.CookElapsed)+"\nPoints lost to mistakes: "+attempt.Penalties;
         improvement=attempt.Mistakes>2?"Follow each highlighted preparation and cooking step on retry. "+attempt.Mistakes+" mistakes prevented completion.":attempt.CuttingAccuracy<.7?"Practise starting and finishing each guided cut steadily.":attempt.ScorchWarnings>0?"Lower the flame earlier to avoid overheating.":attempt.Message;
         if(attempt.Message.IndexOf("time expired",StringComparison.OrdinalIgnoreCase)>=0)improvement="The challenge timer ended. Choose Guided practice to learn without a countdown, or retry the challenge.";
         else if(attempt.Message.StartsWith("Burnt dish",StringComparison.Ordinal))improvement="The container stayed too hot. Lower the flame earlier and keep the heat in the marked band.";
@@ -140,6 +140,11 @@ public sealed class CookingResultView
         if(query.State==AttemptQueryState.Error)diagnostic.text=query.Text;
         rows.rectTransform.sizeDelta=new Vector2(1260,Mathf.Max(490,rows.preferredHeight+25));HistoryButton.interactable=LeaderboardButton.interactable=queryRetryHistory.interactable=queryRetryScores.interactable=!query.Busy;
     }
-    public void Complete(){heritage.gameObject.SetActive(true);heritage.SetAsLastSibling();}
+    public void Complete()
+    {
+        var heading=heritage.Find("HeritageHeading")?.GetComponent<TMP_Text>();
+        if(heading)heading.text=HeritageCards.Unlocked(recipe.Id)?"HERITAGE CARD EARNED!  ("+HeritageCards.Count+" of "+RecipePlan.All.Length+")":"STAGE COMPLETE!";
+        heritage.gameObject.SetActive(true);heritage.SetAsLastSibling();
+    }
     private static string Clock(double seconds){int value=Math.Max(0,(int)Math.Round(seconds));return (value/60).ToString("00")+":"+(value%60).ToString("00");}
 }

@@ -24,7 +24,7 @@ public sealed class CookingStageController : MonoBehaviour
         string display=(view.StartingAlias??"").Trim();
         if(!AttemptContract.ValidName(display)){view.SetModeFeedback("Enter a 1-24 character chef nickname. It is a display name, not your sign-in identity.");return;}
         alias=display;PlayerPrefs.SetString("SavorPinoy.ChefAlias",alias);PlayerPrefs.Save();
-        attempt=new CookingAttempt(correctTrivia,timed,timed?240:120,RecipePlan.For(GameSessionState.SelectedProvince));choosing=false;view.ShowMode(false);Render();
+        attempt=new CookingAttempt(correctTrivia,timed,timed?240:120,GameSessionState.SelectedRecipe);choosing=false;view.ShowMode(false);Render();
     }
     private void Act(string action)
     {

@@ -42,7 +42,9 @@ public sealed class KitchenArt : MonoBehaviour
     }
     public Sprite DishSprite(RecipePlan recipe)
     {
-        if(!recipe.IsHabhab)return PlatedDish;
+        if(recipe.Id=="Batangas_Lomi")return Or(Loose("DishLomi"),Atlas(9));
+        if(recipe.Id=="Quezon_Hardinera")return Or(Loose("DishHardinera"),Loose("Llanera"));
+        if(!recipe.IsHabhab)return PlatedDish?PlatedDish:Loose("DishAdobo");
         if(cache.TryGetValue("habhab_display",out Sprite hit))return hit;
         var source=Atlas(11);if(!source)return null;
         // Exclude transparent atlas gutters through a native sprite rectangle, keeping PNG intact.
@@ -51,7 +53,39 @@ public sealed class KitchenArt : MonoBehaviour
     }
     public Sprite IngredientSprite(string id,bool prepared)
     {
-        switch(id){case "garlic":return prepared?(PreparedGarlic?PreparedGarlic:Atlas(1)):Atlas(1);case "turmeric":return prepared?PreparedTurmeric:Turmeric;case "chicken":return Atlas(prepared?8:7);case "onion":return prepared?Detail(0):Atlas(2);case "vegetables":return Atlas(prepared?6:4);case "carrot":return Atlas(prepared?5:4);case "carrot_planks":return prepared?Atlas(5):Detail(1);case "cabbage":return prepared?Atlas(6):Detail(2);case "noodles":return Atlas(9);case "broth":case "vinegar":return Slice("soy");default:return Slice(id);}
+        switch(id){case "garlic":return prepared?(PreparedGarlic?PreparedGarlic:Atlas(1)):Atlas(1);case "turmeric":return prepared?PreparedTurmeric:Turmeric;case "chicken":return Atlas(prepared?8:7);case "onion":return prepared?Detail(0):Atlas(2);case "vegetables":return Atlas(prepared?6:4);case "carrot":return prepared?Atlas(5):Or(Loose("CarrotPeeled"),Atlas(4));case "carrot_planks":return prepared?Atlas(5):Detail(1);case "cabbage":return prepared?Atlas(6):Detail(2);case "noodles":return Atlas(9);case "broth":return Or(Loose("BrothPan"),Slice("soy"));case "vinegar":return Or(Loose("VinegarBottle"),Slice("soy"));case "soy":return Or(Loose("SoyBottle"),Slice("soy"));
+            case "pork":return Loose(prepared?"PorkCut":"Pork");case "egg":return Loose(prepared?"EggBeaten":"Egg");case "bellpepper":return Loose(prepared?"BellPepperDiced":"BellPepper");
+            case "tomato_sauce":return Loose("TomatoSauce");case "oil":return Loose("OilBottle");case "salt":return Loose("SaltShaker");case "pepper":return Loose("PepperShaker");case "msg":return Loose("MsgPack");
+            case "llanera":return Loose("Llanera");default:return Slice(id);}
+    }
+    private static Sprite Or(Sprite first,Sprite fallback){return first?first:fallback;}
+    // Wok cropped to its visible pixels: the atlas cell has empty space under it, which pushed the flame off.
+    public Sprite Wok
+    {
+        get{
+            if(cache.TryGetValue("wok_visible",out Sprite hit))return hit;
+            var source=Atlas(10);if(!source)return null;Rect r=source.rect;r.y+=r.height*(167f/418f);r.height*=216f/418f;
+            var sprite=Sprite.Create(source.texture,r,new Vector2(.5f,.5f),100,0,SpriteMeshType.FullRect);cache["wok_visible"]=sprite;slices.Add(sprite);return sprite;
+        }
+    }
+    public Sprite Vessel(RecipePlan recipe)=>recipe.UsesWok?Wok:EmptyPalayok;
+    // Fraction of the vessel image below its visible base (the palayok PNG has a small transparent margin).
+    public float VesselBaseInset(Sprite sprite)=>sprite!=null&&sprite==EmptyPalayok?.042f:0f;
+    // Where the vessel's base sits, for an image drawn with preserveAspect in a centred box.
+    public float VesselBase(Image image)
+    {
+        var r=image.rectTransform;Sprite s=image.sprite;if(!s)return r.anchoredPosition.y-r.sizeDelta.y*.5f;
+        float aspect=s.rect.width/s.rect.height,h=Mathf.Min(r.sizeDelta.y,r.sizeDelta.x/aspect);
+        return r.anchoredPosition.y-h*.5f+h*VesselBaseInset(s);
+    }
+    public float VesselWidth(Image image){var r=image.rectTransform;Sprite s=image.sprite;if(!s)return r.sizeDelta.x;float aspect=s.rect.width/s.rect.height;return Mathf.Min(r.sizeDelta.x,r.sizeDelta.y*aspect);}
+    // Stand-alone PNGs in Resources/Art. Returns null when the file is missing so callers can fall back.
+    public Sprite Loose(string resource)
+    {
+        string key="loose_"+resource;if(cache.TryGetValue(key,out Sprite hit))return hit;
+        var texture=Resources.Load<Texture2D>("Art/"+resource);Sprite sprite=null;
+        if(texture){sprite=Sprite.Create(texture,new Rect(0,0,texture.width,texture.height),new Vector2(.5f,.5f),100,0,SpriteMeshType.FullRect);slices.Add(sprite);}
+        cache[key]=sprite;return sprite;
     }
     public Sprite Slice(string key)
     {
