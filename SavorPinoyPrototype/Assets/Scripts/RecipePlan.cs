@@ -34,7 +34,7 @@ public sealed class RecipePlan
             case "Batangas_AdoboSaDilaw":return Groups("cooking oil","chicken","turmeric, garlic");
             case "Batangas_Lomi":return Groups("miki noodles","pork, egg","onion, garlic");
             case "Quezon_PancitHabhab":return Groups("miki noodles","pork broth","carrot, cabbage");
-            case "Quezon_Hardinera":return Groups("cooking oil","pork, egg","carrot, bell pepper");
+            case "Quezon_Hardinera":return Groups("cooking oil","pork, egg","onion, bell pepper");
             default:return "";
         }
     }
