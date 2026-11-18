@@ -19,11 +19,13 @@ public sealed class MainMenuManager : MonoBehaviour
     }
     public void PlayGame()
     {
+        SavorAudio.Click();
         if(!Application.CanStreamedLevelBeLoaded("RegionalTriviaHub")){Debug.LogError("RegionalTriviaHub is not enabled in the active Build Profile.");return;}
         if(signIn)signIn.Show();
     }
     public void OpenOptions()
     {
+        SavorAudio.Click();
         if(options){options.gameObject.SetActive(true);return;}
         Canvas canvas=MenuCanvas();if(!canvas)return;
         PrototypeUI.Font=TMP_Settings.defaultFontAsset;

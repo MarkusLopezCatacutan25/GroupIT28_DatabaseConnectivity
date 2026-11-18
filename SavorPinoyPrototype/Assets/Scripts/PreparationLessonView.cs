@@ -80,7 +80,7 @@ public sealed class PreparationLessonView
     // Rinse under the running tap: water falls, the item turns under it, then the step completes.
     private IEnumerator Wash(string id,Sprite item)
     {
-        washing=true;source.enabled=false;
+        washing=true;source.enabled=false;SavorAudio.Play("SfxFaucet",.8f);
         washItem.sprite=item;washItem.gameObject.SetActive(true);washStream.gameObject.SetActive(true);washSplash.gameObject.SetActive(true);washBubbles.gameObject.SetActive(true);
         var itemRect=washItem.rectTransform;var splashRect=washSplash.rectTransform;
         for(float t=0;t<1;t+=Time.unscaledDeltaTime/1.6f)

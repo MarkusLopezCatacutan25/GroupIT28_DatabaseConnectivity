@@ -22,7 +22,7 @@ public static class PrototypeUI
     {
         Image image=Panel(name,parent,x,y,w,h,new Color(.88f,.65f,.32f));Button b=image.gameObject.AddComponent<Button>();b.targetGraphic=image;
         ColorBlock colors=b.colors;colors.highlightedColor=new Color(1,.92f,.75f);colors.pressedColor=new Color(.7f,.53f,.3f);b.colors=colors;
-        Text(name+"Label",b.transform,label,0,0,w-12,h-6,28);b.onClick.AddListener(onClick);return b;
+        Text(name+"Label",b.transform,label,0,0,w-12,h-6,28);b.onClick.AddListener(SavorAudio.Click);b.onClick.AddListener(onClick);return b;
     }
     public static TMP_InputField Input(string name,Transform parent,float x,float y,float w,float h)
     {

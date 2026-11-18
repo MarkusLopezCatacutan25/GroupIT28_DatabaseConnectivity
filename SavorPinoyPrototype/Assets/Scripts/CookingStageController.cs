@@ -32,7 +32,7 @@ public sealed class CookingStageController : MonoBehaviour
         if(paused||choosing||attempt.Terminal)return;
         if(action.StartsWith("gather:",StringComparison.Ordinal))attempt.Gather(action.Substring(7));
         else if(action.StartsWith("prepare:",StringComparison.Ordinal))attempt.Prepare(action.Substring(8));
-        else if(action.StartsWith("add:",StringComparison.Ordinal))attempt.AddToPot(action.Substring(4));
+        else if(action.StartsWith("add:",StringComparison.Ordinal)){attempt.AddToPot(action.Substring(4));SavorAudio.Play("SfxPots",.6f);}
         else switch(action)
         {
             case "knife":attempt.ChooseKnife();break;case "spoon":attempt.ChooseWrongTool();break;
@@ -40,18 +40,20 @@ public sealed class CookingStageController : MonoBehaviour
         }
         Render();
     }
-    private void Cut(double accuracy){if(paused||choosing)return;attempt.Cut(accuracy);Render();}
+    private void Cut(double accuracy){if(paused||choosing)return;attempt.Cut(accuracy);SavorAudio.Play("SfxChop",.9f);Render();}
     private void Flame(float value){if(paused||choosing||attempt.Phase<CookingPhase.HeatPot)return;attempt.SetFlame(value);Render();}
     private void Update()
     {
         if(view==null||attempt==null)return;view.FitIfNeeded();
         if(!paused&&!choosing&&!attempt.Terminal){attempt.Advance(Time.unscaledDeltaTime);Render();}
+        bool cooking=!paused&&!choosing&&!attempt.Terminal&&attempt.Flame>.05&&attempt.Phase>=CookingPhase.HeatPot;
+        SavorAudio.SetLoops(cooking&&attempt.AdditionIndex>0&&attempt.Phase<CookingPhase.Simmer,cooking&&attempt.Phase==CookingPhase.Simmer,(float)attempt.Flame);
         if(lastUid!=identity.Uid){lastUid=identity.Uid;view.SetIdentity(lastUid);result.IdentityChanged();}
     }
     private void Render()
     {
         view.Render(attempt,paused,choosing);
-        if(attempt.Terminal&&!shown){shown=true;paused=false;view.ShowTerminal();result.Show(attempt,runId,alias);}
+        if(attempt.Terminal&&!shown){shown=true;SavorAudio.Play(attempt.Phase==CookingPhase.Success?"SfxCorrect":"SfxWrong");paused=false;view.ShowTerminal();result.Show(attempt,runId,alias);}
     }
     private void Pause(bool value){if(view==null||attempt==null||attempt.Terminal)return;paused=value;view.ShowPause(value);Render();}
     private void OnApplicationPause(bool value){if(value)Pause(true);}
@@ -60,6 +62,7 @@ public sealed class CookingStageController : MonoBehaviour
     private void Leave(string scene){if(leaving)return;leaving=true;SceneManager.LoadScene(scene);}
     private void OnDestroy()
     {
+        SavorAudio.SetLoops(false,false,0);
         if(view!=null){view.ActionRequested-=Act;view.ModeRequested-=Choose;view.CutRequested-=Cut;view.FlameChanged-=Flame;}
         if(result!=null){result.RetryRequested-=Retry;result.ExitRequested-=Exit;result.Dispose();}
     }

@@ -138,7 +138,7 @@ public sealed class RegionalTriviaManager : MonoBehaviour
     private void Answer(int choice){if(!started||resolved||paused)return;if(remaining<=0){Resolve("TimedOut");return;}selectedChoice=choice;Resolve(choice==question.Correct?"Correct":"Wrong");}
     private void Resolve(string outcome)
     {
-        if(resolved)return;resolved=true;
+        if(resolved)return;resolved=true;SavorAudio.Play(outcome=="Correct"?"SfxCorrect":"SfxWrong");
         if(outcome=="Correct"&&!GameSessionState.ResolveTrivia(question.Id,outcome))return;
         foreach(Button b in optionButtons)b.interactable=false;
         ShowAnswer(outcome);
