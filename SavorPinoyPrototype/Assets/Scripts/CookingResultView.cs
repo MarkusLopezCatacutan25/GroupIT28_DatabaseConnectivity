@@ -119,7 +119,7 @@ public sealed class CookingResultView
     }
     public void RenderSave(AttemptSaveCoordinator save,string uid)
     {
-        identity.text=string.IsNullOrEmpty(uid)?"Guest profile is not connected.":"Guest profile / authenticated UID: "+uid;diagnostic.text=save.Message;
+        identity.text=string.IsNullOrEmpty(uid)?"Guest profile is not connected.":"Guest profile connected (ID ending "+AttemptContract.MaskUid(uid)+")";diagnostic.text=save.Message;
         bool mismatch=!string.IsNullOrEmpty(save.OwnerUid)&&save.OwnerUid!=uid,confirmed=save.SaveSucceeded;
         SaveButton.interactable=!save.Busy&&!confirmed;
         SaveButton.GetComponentInChildren<TMP_Text>().text=save.Busy?(save.State==AttemptSaveState.ReadingBack?"Checking saved result...":"Saving result..."):confirmed?"Result saved":save.State==AttemptSaveState.Error?"Retry save":correctResult?"Save result":"Save practice result";

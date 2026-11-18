@@ -1,0 +1,12 @@
+ M SavorPinoyPrototype/Assets/Scripts/AttemptContract.cs
+ M SavorPinoyPrototype/Assets/Scripts/AttemptSaveCoordinator.cs
+ M SavorPinoyPrototype/Assets/Scripts/ChefSignInView.cs
+ M SavorPinoyPrototype/Assets/Scripts/CookingResultView.cs
+ M SavorPinoyPrototype/Assets/Scripts/SavorPinoyCookingManager.cs
+ M database.rules.json
+ M tools/vertical-slice/UnityJsonStub.cs
+ M tools/vertical-slice/WorkflowTests.cs
+ M tools/vertical-slice/WorkflowTests.csproj
+ M tools/vertical-slice/rules.test.cjs
+?? Docs/Activity9/
+?? tools/vertical-slice/SecurityTests.cs

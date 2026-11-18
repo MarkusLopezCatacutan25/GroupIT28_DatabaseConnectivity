@@ -1,0 +1,9 @@
+diff --git a/database.rules.json b/database.rules.json
+index 8331cdf..8e8001e 100755
+--- a/database.rules.json
++++ b/database.rules.json
+@@ -72,3 +72,3 @@
+ 
+-              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120"
++              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120 && newData.val().matches(/^[a-z0-9_]{1,40} [|] [0-3] stars$/)"
+ 

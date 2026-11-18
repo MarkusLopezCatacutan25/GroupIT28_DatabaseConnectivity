@@ -22,7 +22,7 @@ public sealed class SavorPinoyCookingManager : MonoBehaviour
         var repository=new AttemptRepository(firebase,identity);
         ChefAttemptOutbox outbox;
         try{outbox=new ChefAttemptOutbox(Path.Combine(Application.persistentDataPath,"savorpinoy-owned-attempts-v2.json"));}
-        catch(Exception error){view.SetModeFeedback(error.Message);Debug.LogError("Pending attempt storage is unavailable; existing data preserved.");return;}
+        catch(Exception error){view.SetModeFeedback("Saved attempts on this device could not be opened. Your existing data was kept. Please restart the game.");Debug.LogError("Pending attempt storage is unavailable; existing data preserved. "+error.GetType().Name+": "+error.Message);return;}
         var save=new AttemptSaveCoordinator(identity,repository,outbox);
         var query=new AttemptQueryController();var queries=new AttemptQueryService(firebase,identity);
         var resultView=new CookingResultView(view,GetComponent<KitchenArt>());

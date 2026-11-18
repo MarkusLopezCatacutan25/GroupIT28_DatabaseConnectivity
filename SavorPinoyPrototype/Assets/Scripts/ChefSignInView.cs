@@ -30,7 +30,7 @@ public sealed class ChefSignInView
         var title=PrototypeUI.Text("SignInHeading",card,"CHEF SIGN-IN",0,155,860,70,40);title.fontStyle=FontStyles.Bold;
         PrototypeUI.Text("SignInIntro",card,"Play as a guest chef. Your cooking progress is saved to your guest profile.",0,85,850,70,26);
         PrototypeUI.Text("SignInAliasLabel",card,"Your chef name (optional)",0,10,800,42,24);
-        alias=PrototypeUI.Input("SignInChefAlias",card,0,-55,650,68);((TMP_Text)alias.placeholder).text="Chef";
+        alias=PrototypeUI.Input("SignInChefAlias",card,0,-55,650,68);((TMP_Text)alias.placeholder).text="Chef";alias.characterLimit=24;alias.contentType=TMP_InputField.ContentType.Standard;alias.lineType=TMP_InputField.LineType.SingleLine;
         status=PrototypeUI.Text("SignInStatus",card,"",0,-140,850,85,24);
         submit=PrototypeUI.Button("GuestSignInButton",card,"Continue as guest",0,-232,650,86,()=>SubmitRequested?.Invoke());
         PrototypeUI.Button("BackFromSignIn",card,"Back",0,-322,300,58,()=>BackRequested?.Invoke());

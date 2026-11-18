@@ -6,6 +6,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="WorkflowTests.cs" />
+    <Compile Include="SecurityTests.cs" />
     <Compile Include="PreparationWorkflowTests.cs" />
     <Compile Include="../../SavorPinoyPrototype/Assets/Scripts/RecipePlan.cs" />
     <Compile Include="../../SavorPinoyPrototype/Assets/Scripts/PreparationProgress.cs" />

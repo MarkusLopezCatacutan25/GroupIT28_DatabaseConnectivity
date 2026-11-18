@@ -1,0 +1,28 @@
+diff --git a/SavorPinoyPrototype/Assets/Scripts/AttemptContract.cs b/SavorPinoyPrototype/Assets/Scripts/AttemptContract.cs
+index feb19bf..ae88fc9 100755
+--- a/SavorPinoyPrototype/Assets/Scripts/AttemptContract.cs
++++ b/SavorPinoyPrototype/Assets/Scripts/AttemptContract.cs
+@@ -16,0 +17,2 @@ public static class AttemptContract
++    // Activity 9: on-screen identity shows only the last 4 characters of the Firebase UID.
++    public static string MaskUid(string uid)=>string.IsNullOrEmpty(uid)?"":(uid.Length<=4?"****":"…"+uid.Substring(uid.Length-4));
+diff --git a/SavorPinoyPrototype/Assets/Scripts/ChefSignInView.cs b/SavorPinoyPrototype/Assets/Scripts/ChefSignInView.cs
+index 305780c..a6f32bb 100755
+--- a/SavorPinoyPrototype/Assets/Scripts/ChefSignInView.cs
++++ b/SavorPinoyPrototype/Assets/Scripts/ChefSignInView.cs
+@@ -33 +33 @@ public sealed class ChefSignInView
+-        alias=PrototypeUI.Input("SignInChefAlias",card,0,-55,650,68);((TMP_Text)alias.placeholder).text="Chef";
++        alias=PrototypeUI.Input("SignInChefAlias",card,0,-55,650,68);((TMP_Text)alias.placeholder).text="Chef";alias.characterLimit=24;alias.contentType=TMP_InputField.ContentType.Standard;alias.lineType=TMP_InputField.LineType.SingleLine;
+diff --git a/SavorPinoyPrototype/Assets/Scripts/CookingResultView.cs b/SavorPinoyPrototype/Assets/Scripts/CookingResultView.cs
+index 1768f90..5fe8181 100755
+--- a/SavorPinoyPrototype/Assets/Scripts/CookingResultView.cs
++++ b/SavorPinoyPrototype/Assets/Scripts/CookingResultView.cs
+@@ -122 +122 @@ public sealed class CookingResultView
+-        identity.text=string.IsNullOrEmpty(uid)?"Guest profile is not connected.":"Guest profile / authenticated UID: "+uid;diagnostic.text=save.Message;
++        identity.text=string.IsNullOrEmpty(uid)?"Guest profile is not connected.":"Guest profile connected (ID ending "+AttemptContract.MaskUid(uid)+")";diagnostic.text=save.Message;
+diff --git a/SavorPinoyPrototype/Assets/Scripts/SavorPinoyCookingManager.cs b/SavorPinoyPrototype/Assets/Scripts/SavorPinoyCookingManager.cs
+index 5158818..11368e3 100755
+--- a/SavorPinoyPrototype/Assets/Scripts/SavorPinoyCookingManager.cs
++++ b/SavorPinoyPrototype/Assets/Scripts/SavorPinoyCookingManager.cs
+@@ -25 +25 @@ public sealed class SavorPinoyCookingManager : MonoBehaviour
+-        catch(Exception error){view.SetModeFeedback(error.Message);Debug.LogError("Pending attempt storage is unavailable; existing data preserved.");return;}
++        catch(Exception error){view.SetModeFeedback("Saved attempts on this device could not be opened. Your existing data was kept. Please restart the game.");Debug.LogError("Pending attempt storage is unavailable; existing data preserved. "+error.GetType().Name+": "+error.Message);return;}

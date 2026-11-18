@@ -1,0 +1,11 @@
+ SavorPinoyPrototype/Assets/Scripts/AttemptContract.cs   |  2 ++
+ .../Assets/Scripts/AttemptSaveCoordinator.cs            | 17 +++++++++++++----
+ SavorPinoyPrototype/Assets/Scripts/ChefSignInView.cs    |  2 +-
+ SavorPinoyPrototype/Assets/Scripts/CookingResultView.cs |  2 +-
+ .../Assets/Scripts/SavorPinoyCookingManager.cs          |  2 +-
+ database.rules.json                                     |  2 +-
+ tools/vertical-slice/UnityJsonStub.cs                   |  8 ++++++++
+ tools/vertical-slice/WorkflowTests.cs                   |  1 +
+ tools/vertical-slice/WorkflowTests.csproj               |  1 +
+ tools/vertical-slice/rules.test.cjs                     |  4 ++--
+ 10 files changed, 31 insertions(+), 10 deletions(-)

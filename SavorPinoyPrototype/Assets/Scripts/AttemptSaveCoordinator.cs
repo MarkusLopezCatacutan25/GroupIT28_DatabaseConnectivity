@@ -47,11 +47,20 @@ public sealed class AttemptSaveCoordinator
     }
     public void Dispose(){disposed=true;Changed=null;}
     private void Notify(){if(!disposed)Changed?.Invoke();}
+    // Activity 9: players see a fixed, non-technical message; the raw SDK detail goes to the developer log only.
     public static string Friendly(Exception error)
     {
-        string reason=error.GetBaseException().Message;
-        if(reason.IndexOf("permission",StringComparison.OrdinalIgnoreCase)>=0||reason.IndexOf("denied",StringComparison.OrdinalIgnoreCase)>=0)return "Check sign-in and the deployed database rules.";
-        if(reason.IndexOf("network",StringComparison.OrdinalIgnoreCase)>=0)return "Check your connection.";
-        return reason.Length<=180?reason:"Check Firebase configuration and retry.";
+        string reason=error?.GetBaseException().Message??"";
+        UnityEngine.Debug.LogWarning("[SavorPinoy] Firebase operation failed: "+(error?.GetBaseException().GetType().Name??"Unknown")+": "+reason);
+        return FriendlyFor(error);
+    }
+    public static string FriendlyFor(Exception error)
+    {
+        string reason=error?.GetBaseException().Message??"";
+        if(error?.GetBaseException() is TimeoutException)return "The server did not answer in time. Check your connection.";
+        if(reason.IndexOf("permission",StringComparison.OrdinalIgnoreCase)>=0||reason.IndexOf("denied",StringComparison.OrdinalIgnoreCase)>=0)return "The save was not allowed. Check sign-in and the deployed database rules.";
+        if(reason.IndexOf("network",StringComparison.OrdinalIgnoreCase)>=0||reason.IndexOf("offline",StringComparison.OrdinalIgnoreCase)>=0||reason.IndexOf("connect",StringComparison.OrdinalIgnoreCase)>=0)return "Check your connection.";
+        if(error?.GetBaseException() is InvalidOperationException&&reason.Length<=120&&!reason.Contains("/")&&!reason.Contains("http",StringComparison.OrdinalIgnoreCase))return reason;
+        return "Something went wrong. Please try again.";
     }
 }

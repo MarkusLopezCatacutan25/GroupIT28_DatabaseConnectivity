@@ -7,7 +7,7 @@ const {ref,update,get,query,orderByChild,limitToLast,set,remove}=require('fireba
  const results=[];let serial=0;
  const id=()=> 'attempt_'+(++serial).toString(16).padStart(32,'0');
  const a=env.authenticatedContext('chef-a').database(),b=env.authenticatedContext('chef-b').database(),guest=env.unauthenticatedContext().database();
- const valid={dish_id:'Batangas_AdoboSaDilaw',score:950,is_correct:true,remarks:'Master Searing',created_at:'2026-10-27T10:05:00Z'};
+ const valid={dish_id:'Batangas_AdoboSaDilaw',score:950,is_correct:true,remarks:'batangas_prep_v3 | 3 stars',created_at:'2026-10-27T10:05:00Z'};
  const stamp='2026-10-27T10:05:00Z';
  const payload=(key,attempt=valid,uid='chef-a',board=true)=>{
   const p={};p[`users/${uid}/display_name`]='ChefMaria';p[`users/${uid}/updated_at`]=stamp;p[`users/${uid}/attempts/${key}`]=attempt;
@@ -31,7 +31,7 @@ const {ref,update,get,query,orderByChild,limitToLast,set,remove}=require('fireba
  await check('attempt score overwrite rejected',assertFails(update(ref(a),payload(key,{...valid,score:951}))));
  await check('leaderboard ownership overwrite rejected',assertFails(set(ref(b,`leaderboard/${key}`),{uid:'chef-b',player_name:'Other',dish_id:valid.dish_id,score:950,created_at:stamp})));
  await check('leaderboard deletion rejected',assertFails(remove(ref(a,`leaderboard/${key}`))));
- for(const [label,patch] of [['negative score',{score:-1}],['score over ceiling',{score:9376}],['fractional score',{score:1.1}],['string score',{score:'950'}],['wrong dish',{dish_id:'Other'}],['string correctness',{is_correct:'true'}],['empty remarks',{remarks:''}],['long remarks',{remarks:'x'.repeat(121)}],['bad timestamp',{created_at:'yesterday'}],['numeric timestamp',{created_at:123}],['unknown field',{extra:true}]])
+ for(const [label,patch] of [['negative score',{score:-1}],['score over ceiling',{score:9376}],['fractional score',{score:1.1}],['string score',{score:'950'}],['wrong dish',{dish_id:'Other'}],['string correctness',{is_correct:'true'}],['empty remarks',{remarks:''}],['long remarks',{remarks:'x'.repeat(121)}],['free-text remarks',{remarks:'Master Searing'}],['script in remarks',{remarks:'<script>alert(1)</script>'}],['impossible star count',{remarks:'batangas_prep_v3 | 9 stars'}],['bad timestamp',{created_at:'yesterday'}],['numeric timestamp',{created_at:123}],['unknown field',{extra:true}]])
   await check(label+' rejected',assertFails(update(ref(a),payload(id(),{...valid,...patch}))));
  for(const field of Object.keys(valid)){const missing={...valid};delete missing[field];await check('missing '+field+' rejected',assertFails(update(ref(a),payload(id(),missing,'chef-a',false))));}
  await check('unknown profile field rejected',assertFails(set(ref(a,'users/chef-a/admin'),true)));

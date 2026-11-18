@@ -1,0 +1,4 @@
+89358a3 2026-11-18 Add manuscript framework figures; fix Hardinera GLOW food group
+b3f2233 2026-11-18 Replace Lomi and Hardinera placeholder dish art with Gemini art
+8e2913f 2026-11-18 Add Lomi and Hardinera dishes, Heritage Cards, sink station and quality settings
+feature/four-dishes-heritage-cards

@@ -30,6 +30,7 @@ public static class WorkflowTests
     public static async Task Main(string[] args)
     {
         PreparationWorkflowTests.Run();
+        await SecurityTests.Run();
         directory=Path.GetFullPath(args[0]);Directory.CreateDirectory(directory);
         Check(AttemptContract.Valid(Record()),"schema example validates");
         Check(Record().Payload().Keys.OrderBy(x=>x).SequenceEqual(new[]{"created_at","dish_id","is_correct","remarks","score"}),"attempt payload has exactly the five specified fields");

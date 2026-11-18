@@ -14,6 +14,8 @@ public static class AttemptContract
     public static bool ValidTimestamp(string value)=>DateTime.TryParseExact(value,TimestampFormat,CultureInfo.InvariantCulture,DateTimeStyles.AssumeUniversal|DateTimeStyles.AdjustToUniversal,out _);
     public static bool ValidScoreValue(object value)=>value is long number&&number>=0&&number<=MaximumScore || value is double fraction&&!double.IsNaN(fraction)&&fraction>=0&&fraction<=MaximumScore&&Math.Truncate(fraction)==fraction;
     public static bool Valid(AttemptRecord record)=>record!=null && RecipePlan.Supported(record.dish_id) && record.score>=0 && record.score<=MaximumScore && !string.IsNullOrWhiteSpace(record.remarks) && record.remarks.Length<=120 && ValidTimestamp(record.created_at);
+    // Activity 9: on-screen identity shows only the last 4 characters of the Firebase UID.
+    public static string MaskUid(string uid)=>string.IsNullOrEmpty(uid)?"":(uid.Length<=4?"****":"…"+uid.Substring(uid.Length-4));
     public static AttemptRecord From(CookingAttempt attempt)
     {
         if(attempt==null || !attempt.Terminal)throw new InvalidOperationException("Finish the cooking attempt first.");
