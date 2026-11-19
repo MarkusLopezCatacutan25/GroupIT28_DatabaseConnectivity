@@ -7,7 +7,7 @@ using UnityEngine;
 // Builds a sideloadable APK for pilot testing: <repo>/Builds/SavorPinoy-v<version>-android.apk
 public static class SavorPinoyAndroidBuilder
 {
-    [MenuItem("SavorPinoy/Release/Build Android APK")]
+    [MenuItem("SavorPinoy/Release/Build Android APK %#&F9")]
     public static void BuildAndroidApk()
     {
         string version = PlayerSettings.bundleVersion;

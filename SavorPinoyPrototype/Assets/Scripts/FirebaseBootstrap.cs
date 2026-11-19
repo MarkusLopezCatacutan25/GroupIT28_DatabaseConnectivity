@@ -29,6 +29,7 @@ public sealed class FirebaseBootstrap
         }
     }
     public bool IsEmulator { get; private set; }
+    public string DatabaseUrl=>resolvedDatabaseUrl;
     public FirebaseBootstrap(FirebaseSettings settings){this.settings=settings;}
     public Task InitializeAsync()
     {

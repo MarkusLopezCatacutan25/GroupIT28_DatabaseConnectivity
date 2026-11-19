@@ -15,6 +15,8 @@ public sealed class MainMenuManager : MonoBehaviour
         ScreenBrightness.Apply(PlayerPrefs.GetFloat("SavorPinoy.Brightness",1));FitStartArt(canvas);
         PrototypeUI.Font=TMP_Settings.defaultFontAsset;var cardsButton=PrototypeUI.Button("HeritageCardsButton",canvas.transform,"Heritage Cards  "+HeritageCards.Count+"/"+RecipePlan.All.Length,700,-455,380,84,OpenHeritageCards);var cardsRect=(RectTransform)cardsButton.transform;cardsRect.anchorMin=cardsRect.anchorMax=cardsRect.pivot=new Vector2(1,0);cardsRect.anchoredPosition=new Vector2(-36,36);cardsButton.GetComponentInChildren<TMP_Text>().fontStyle=FontStyles.Bold;
         var howButton=PrototypeUI.Button("HowToPlayButton",canvas.transform,"How to Play",0,0,300,84,OpenHowToPlay);var howRect=(RectTransform)howButton.transform;howRect.anchorMin=howRect.anchorMax=howRect.pivot=Vector2.zero;howRect.anchoredPosition=new Vector2(36,36);howButton.GetComponentInChildren<TMP_Text>().fontStyle=FontStyles.Bold;
+        // Instructor access: read-only dashboard behind an admin email/password account.
+        var adminButton=PrototypeUI.Button("AdminButton",canvas.transform,"Admin",0,0,170,64,()=>{var c=MenuCanvas();if(c)AdminDashboard.Show(c.transform,firebaseSettings);});var adminRect=(RectTransform)adminButton.transform;adminRect.anchorMin=adminRect.anchorMax=adminRect.pivot=new Vector2(0,1);adminRect.anchoredPosition=new Vector2(28,-28);adminButton.GetComponentInChildren<TMP_Text>().fontSize=24;
         signIn=gameObject.AddComponent<ChefSignInController>();
         signIn.Initialize(canvas,new FirebaseAuthManager(new FirebaseBootstrap(firebaseSettings)));
     }
