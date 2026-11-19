@@ -32,6 +32,19 @@ public sealed class CookingStageView : MonoBehaviour
     private StoveFlameGraphic stoveFlame;
     private VesselContents potFood;
     private RectTransform[] dragItems;
+    // Pilot-test additions: recipe steps panel, beginner tips, demo hands, sandok and plate, wrong-order card.
+    private RecipeStepsPanel steps;
+    private TutorialCoach coach;
+    private HandGuide cookHand,cutHand;
+    private SandokTool sandok;
+    private RectTransform sandokRect,plateRect,wrongCard;
+    private PlateGraphic plate;
+    private Image platedFood;
+    private TMP_Text wrongText;
+    private int lastWrong;
+    private float wrongUntil;
+    private bool stirPenaltyThisDrag;
+    public bool TutorialBlocking=>coach!=null&&coach.Blocking;
 
 
     private TMP_Text closeupTitle, clockLabel, modeNote;
@@ -142,7 +155,7 @@ public sealed class CookingStageView : MonoBehaviour
         {
             string id=recipePlan.Additions[i];int index=i;
             var item=art.Draw("Drag_"+id,kitchenScene,art.IngredientSprite(id,true),0,0,120,90);item.raycastTarget=true;dragItems[i]=item.rectTransform;
-            Label("DragLabel_"+id,item.transform,RecipePlan.Name(id),0,-66,138,34,17);
+            Label("DragLabel_"+id,item.transform,(i+1)+". "+RecipePlan.Name(id),0,-66,158,34,17);
             var drag=item.gameObject.AddComponent<IngredientDrag>();ingredientDrags[i]=drag;drag.Target=focusView.DropTarget;
             drag.CanDrag=()=>!paused&&!choosingMode&&!attempt.Terminal&&attempt.Phase>=CookingPhase.Garlic&&attempt.Phase<CookingPhase.Plate&&Array.IndexOf(recipePlan.Additions,id)>=attempt.AdditionIndex;
             // During a drag the owner is busy; release validation checks the session instead.
@@ -153,6 +166,22 @@ public sealed class CookingStageView : MonoBehaviour
         stirButton=ActionButton("Stir",kitchenScene,"Stir",205,-315,185,65,()=>{ActionRequested?.Invoke("stir");});
         plateButton=ActionButton("Plate",kitchenScene,"Plate dish",480,-315,250,65,()=>{ActionRequested?.Invoke("plate");});
         startCooking=ActionButton("StartCooking",kitchenScene,"Start cooking",-415,-240,420,75,()=>{ActionRequested?.Invoke("warm");});
+        plate=PrototypeUI.Rect("ServingPlate",kitchenScene,540,-330,230,96).gameObject.AddComponent<PlateGraphic>();plate.raycastTarget=false;plateRect=plate.rectTransform;
+        platedFood=art.Draw("PlatedFood",plateRect,art.DishSprite(recipePlan),0,14,170,90);platedFood.gameObject.SetActive(false);
+        Label("PlateLabel",kitchenScene,"PLATE",540,-400,150,36,18);
+        sandokRect=PrototypeUI.Rect("Sandok",kitchenScene,210,-335,250,74);sandokRect.gameObject.AddComponent<CanvasGroup>();
+        var sandokArt=sandokRect.gameObject.AddComponent<SandokGraphic>();sandokArt.raycastTarget=true;
+        Label("SandokLabel",kitchenScene,"SANDOK",210,-400,170,36,18);
+        sandok=sandokRect.gameObject.AddComponent<SandokTool>();sandok.Pot=potBody.rectTransform;sandok.Plate=plateRect;sandok.GhostParent=design;
+        sandok.CanUse=()=>!paused&&!choosingMode&&attempt!=null&&!attempt.Terminal&&attempt.Phase>=CookingPhase.Garlic&&!focusView.Busy&&!TutorialBlocking;
+        sandok.Serving=()=>attempt!=null&&attempt.Phase==CookingPhase.Plate;
+        sandok.Stirred=()=>
+        {
+            if(attempt.Phase==CookingPhase.Simmer&&!recipePlan.StirAllowed){if(stirPenaltyThisDrag)return;stirPenaltyThisDrag=true;}
+            ActionRequested?.Invoke("stir");
+        };
+        sandok.Released=onPlate=>{if(onPlate)ActionRequested?.Invoke("plate");};
+        SandokTool.Grabbed+=OnSandokGrabbed;
         closeupScene=PrototypeUI.Rect("ChoppingCloseup",design,0,0,1800,1000);
         art.Draw("ChoppingBackground",closeupScene,art.Closeup,0,0,1800,1000,false);
         closeupTitle=Label("CloseupTitle",closeupScene,"",0,270,940,75,36);
@@ -191,7 +220,12 @@ public sealed class CookingStageView : MonoBehaviour
         ingredientText.gameObject.SetActive(false);traceHint.gameObject.SetActive(false);
         closeupTitle.transform.SetAsLastSibling();closeupTitle.rectTransform.anchoredPosition=new Vector2(0,274);closeupTitle.color=Wood;closeupTitle.fontSize=38;
         feedbackGroup=PrototypeUI.Rect("FeedbackToast",design,0,280,1090,70);feedbackText=Label("Feedback",feedbackGroup,"",0,0,1090,70,26);
+        cookHand=HandGuide.Create("CookingHandGuide",kitchenScene);
+        cutHand=HandGuide.Create("CuttingHandGuide",board);
+        BuildWrongCard();
         focusView.transform.SetAsLastSibling();BuildPause();BuildMode();
+        coach=new TutorialCoach(design,(n,parent,label,x,y,w,h,act)=>ActionButton(n,parent,label,x,y,w,h,act));
+        steps=new RecipeStepsPanel(safe,recipePlan);steps.Toggled+=Fit;
         readableText=new Material(fontAsset.material);readableText.SetFloat("_OutlineWidth",0);readableText.SetFloat("_FaceDilate",0);readableText.DisableKeyword("UNDERLAY_ON");
         foreach(TMP_Text text in design.GetComponentsInChildren<TMP_Text>(true))text.fontSharedMaterial=readableText;
     }
@@ -201,7 +235,7 @@ public sealed class CookingStageView : MonoBehaviour
         PrototypeUI.Panel("WelcomeBorderOuter",modePanel,0,330,1290,150,new Color(.93f,.74f,.38f)).raycastTarget=false;
         PrototypeUI.Panel("WelcomeBorderInner",modePanel,0,330,1270,130,new Color(.20f,.10f,.04f)).raycastTarget=false;
         Label("Welcome",modePanel,"LET'S MAKE "+recipePlan.Dish.ToUpperInvariant(),0,330,1200,100,46);
-        TMP_Text intro=PrototypeUI.Text("ModeIntro",modePanel,"Choose how you want to play.",0,235,1380,70,30);intro.color=Parchment;
+        TMP_Text intro=PrototypeUI.Text("ModeIntro",modePanel,"Choose how you want to play. New here? Pick Guided practice: it shows tips and a moving hand for every step.",0,235,1380,70,28);intro.color=Parchment;
         startingAlias=PrototypeUI.Input("StartingChefAlias",modePanel,0,135,650,70);startingAlias.text=ChefAccessSession.DisplayName??PlayerPrefs.GetString("SavorPinoy.ChefAlias","Chef");startingAlias.interactable=false;
         ActionButton("GuidedPractice",modePanel,"Guided practice",-345,-5,600,105,()=>ModeRequested?.Invoke(false));
         ActionButton("TimedChallenge",modePanel,"Timed challenge",345,-5,600,105,()=>ModeRequested?.Invoke(true));
@@ -209,6 +243,16 @@ public sealed class CookingStageView : MonoBehaviour
         var challenge=PrototypeUI.Text("ChallengeInfo",modePanel,"FOR A CHALLENGE\n4 minutes to prepare, then a cooking countdown.\nYour score is ranked.",345,-160,590,200,29);challenge.color=Parchment;
         modeNote=PrototypeUI.Text("ModeNote",modePanel,"Your trivia reward is kept in both modes. Only Timed challenge scores are ranked.",0,-345,1450,100,25);modeNote.color=Parchment;
     }
+    private void BuildWrongCard()
+    {
+        wrongCard=PrototypeUI.Panel("WrongOrderCard",design,0,120,1060,250,new Color(.93f,.74f,.38f)).rectTransform;
+        PrototypeUI.Panel("WrongOrderInner",wrongCard,0,0,1044,234,new Color(1,.95f,.80f)).raycastTarget=false;
+        var head=PrototypeUI.Text("WrongOrderTitle",wrongCard,"WAIT! NOT YET",0,78,980,56,36);head.color=new Color(.70f,.13f,.10f);head.fontStyle=FontStyles.Bold;
+        wrongText=PrototypeUI.Text("WrongOrderText",wrongCard,"",0,8,980,80,27);wrongText.color=Wood;wrongText.fontStyle=FontStyles.Bold;
+        ActionButton("WrongOrderOk",wrongCard,"OK, I'll follow the steps",0,-78,460,70,()=>{wrongUntil=0;wrongCard.gameObject.SetActive(false);});
+        wrongCard.gameObject.SetActive(false);
+    }
+    private void OnSandokGrabbed(){stirPenaltyThisDrag=false;}
     private void ResetKnife()
     {
         if(!knifeBlade||!board)return;float x=(.3f+.2f*(attempt.Cuts%3)-.5f)*board.rect.width;
@@ -222,14 +266,17 @@ public sealed class CookingStageView : MonoBehaviour
         PrototypeUI.Panel("PauseCard",pausePanel,0,-40,1140,620,new Color(.20f,.10f,.04f)).raycastTarget=false;
         Label("PausedTitle",pausePanel,"GAME PAUSED",0,170,700,100,56);
         Label("PauseInfo",pausePanel,"Take your time. Leaving for the main menu ends this attempt.",0,40,1000,100,30);
-        ActionButton("Resume",pausePanel,"Resume",0,-110,520,90,()=>ActionRequested?.Invoke("resume"));
-        ActionButton("LeaveStage",pausePanel,"Leave to main menu",0,-225,520,90,()=>ActionRequested?.Invoke("exit"));pausePanel.gameObject.SetActive(false);
+        ActionButton("Resume",pausePanel,"Resume",0,-70,520,84,()=>ActionRequested?.Invoke("resume"));
+        ActionButton("LeaveStage",pausePanel,"Leave to main menu",0,-170,520,84,()=>ActionRequested?.Invoke("exit"));
+        ActionButton("ShowTipsAgain",pausePanel,"Show tips again",0,-270,520,84,()=>{TutorialCoach.ResetAll();ActionRequested?.Invoke("resume");});pausePanel.gameObject.SetActive(false);
     }
     private void Fit()
     {
         if(!safe || Screen.width<=0 || Screen.height<=0)return;Rect area=Screen.safeArea;lastSafe=area;lastSize=new Vector2Int(Screen.width,Screen.height);
         safe.anchorMin=new Vector2(area.x/Screen.width,area.y/Screen.height);safe.anchorMax=new Vector2(area.xMax/Screen.width,area.yMax/Screen.height);safe.offsetMin=safe.offsetMax=Vector2.zero;
-        Canvas.ForceUpdateCanvases();design.localScale=Vector3.one*Mathf.Max(.1f,Mathf.Min((safe.rect.width-24)/1800,(safe.rect.height-24)/1000));
+        Canvas.ForceUpdateCanvases();float side=steps!=null?steps.Width:0;
+        design.anchoredPosition=new Vector2(side*.5f,0);
+        design.localScale=Vector3.one*Mathf.Max(.1f,Mathf.Min((safe.rect.width-side-24)/1800,(safe.rect.height-24)/1000));
     }
     public void Render(CookingAttempt model,bool isPaused,bool selecting)
     {
@@ -239,7 +286,7 @@ public sealed class CookingStageView : MonoBehaviour
         clockLabel.text=attempt.TimedChallenge?(preparing?"PREP TIME LEFT":"COOK TIME LEFT"):"ACTIVE TIME / PRACTICE";
         timerText.text=attempt.TimedChallenge?Clock(preparing?attempt.Remaining:attempt.CookingRemaining):Stopwatch(attempt.Elapsed);
         phaseText.text=attempt.Terminal?"REVIEW YOUR DISH":preparing?(cutting?"2 / PREPARE":"1 / GATHER"):"3 / COOK";
-        objectiveText.text=attempt.Phase==CookingPhase.Gather?"Gather the highlighted ingredients, then choose Knife.":attempt.Phase==CookingPhase.Chop?(attempt.Preparation.Current!=null&&attempt.Preparation.Current.IsCut?"Touch START, then drag down to FINISH.   |   Cuts "+attempt.Cuts+" / "+attempt.Preparation.RequiredCuts:"Drag the highlighted item to its target."):attempt.Phase==CookingPhase.HeatPot?"Tap Start cooking to warm the cooking container.":attempt.Phase==CookingPhase.Simmer?recipePlan.SimmerHint:attempt.ExpectedIngredient!=null&&attempt.Phase!=CookingPhase.Sear?"Drag "+RecipePlan.Name(attempt.ExpectedIngredient)+" into the "+recipePlan.Container.ToLowerInvariant()+".":Objective(attempt.Phase);
+        objectiveText.text=attempt.Phase==CookingPhase.Gather?"Gather the highlighted ingredients, then choose Knife.":attempt.Phase==CookingPhase.Chop?(attempt.Preparation.Current!=null&&attempt.Preparation.Current.IsCut?"Touch START, then drag down to FINISH.   |   Cuts "+attempt.Cuts+" / "+attempt.Preparation.RequiredCuts:"Drag the highlighted item to its target."):attempt.Phase==CookingPhase.HeatPot?"Tap Start cooking to warm the cooking container.":attempt.Phase==CookingPhase.Plate?(attempt.Flame>.01?"Turn the flame OFF with Adjust heat.":"Drag the sandok onto the plate to serve."):attempt.NeedsStir?"Move the sandok around over the "+recipePlan.Container.ToLowerInvariant()+" to stir.":attempt.Phase==CookingPhase.Simmer?recipePlan.SimmerHint:attempt.ExpectedIngredient!=null&&attempt.Phase!=CookingPhase.Sear?"Drag "+RecipePlan.Name(attempt.ExpectedIngredient)+" into the "+recipePlan.Container.ToLowerInvariant()+".":Objective(attempt.Phase);
         if(lastMessage!=attempt.Message){lastMessage=attempt.Message;feedbackUntil=Time.unscaledTime+3;feedbackText.text=attempt.Message;}
         bool showFeedback=Time.unscaledTime<feedbackUntil && (attempt.Mistakes>0 || cutting&&attempt.Cuts>0);
         feedbackGroup.gameObject.SetActive(showFeedback&&!cutting);
@@ -268,8 +315,17 @@ public sealed class CookingStageView : MonoBehaviour
         preparationView.Render(attempt,!paused&&!choosingMode&&cutting);
         startCooking.gameObject.SetActive(attempt.Phase==CookingPhase.HeatPot);startCooking.interactable=canCook;
         flame.gameObject.SetActive(false);flame.interactable=false;
-        stirButton.gameObject.SetActive(!preparing);stirButton.interactable=canCook&&attempt.Phase==CookingPhase.Simmer;
-        plateButton.gameObject.SetActive(!preparing);plateButton.interactable=canCook&&attempt.Phase==CookingPhase.Plate;
+        // The sandok replaces the Stir and Plate buttons.
+        stirButton.gameObject.SetActive(false);plateButton.gameObject.SetActive(false);
+        sandokRect.gameObject.SetActive(!preparing);plateRect.gameObject.SetActive(!preparing);
+        foreach(string n in new[]{"SandokLabel","PlateLabel"})foreach(Transform t in kitchenScene)if(t.name.StartsWith(n,StringComparison.Ordinal))t.gameObject.SetActive(!preparing);
+        // The station sign would sit under the sandok and plate while cooking.
+        foreach(Transform t in kitchenScene)if(t.name.StartsWith("CookingStation",StringComparison.Ordinal))t.gameObject.SetActive(preparing);
+        bool glow=attempt.Phase==CookingPhase.Plate&&attempt.Flame<=.01;if(plate.Glow!=glow){plate.Glow=glow;plate.SetVerticesDirty();}
+        platedFood.gameObject.SetActive(attempt.Phase==CookingPhase.Success);
+        if(!canCook)sandok.Cancel();
+        sandokRect.localScale=Vector3.one*(attempt.NeedsStir||glow?1+.06f*Mathf.Sin(Time.unscaledTime*6):1);
+        RenderGuides(attempt,preparing,cutting,canCook);
         heatGroup.gameObject.SetActive(!preparing);stoveControls.gameObject.SetActive(!preparing);potText.text=preparing?(recipePlan.UsesWok?"KAWALI / COOKING PAN":"PALAYOK / CLAY POT"):CookingVesselPresentation.Burnt(attempt)?"BURNT / LOWER HEAT EARLIER":attempt.Phase==CookingPhase.Simmer?recipePlan.SimmerLabel+" / "+Mathf.FloorToInt((float)attempt.SimmerProgress)+" of 12s":attempt.Phase==CookingPhase.Sear?recipePlan.SearLabel+" / "+Mathf.FloorToInt((float)attempt.SearProgress)+" of 4s":"STEP "+Mathf.Min(attempt.AdditionIndex+1,recipePlan.Additions.Length)+" OF "+recipePlan.Additions.Length;
         heatText.text="HEAT "+Mathf.RoundToInt((float)attempt.Heat)+" / 110\nKeep in the 60-85 band";
         flameVisual.gameObject.SetActive(!preparing&&attempt.Flame>.01);stoveFlame.gameObject.SetActive(!preparing&&attempt.Flame>.01);stoveFlame.Level=(float)attempt.Flame;flameVisual.color=Color.Lerp(new Color(.8f,.27f,.04f),new Color(1,.68f,.1f),(float)attempt.Flame);
@@ -311,6 +367,51 @@ public sealed class CookingStageView : MonoBehaviour
         traceHint.text=cutStep?"Touch START, then drag down to FINISH.":"Drag the highlighted item to its target.";
 
     }
+    // Steps panel, beginner tips, demonstration hands and the wrong-order card.
+    private void RenderGuides(CookingAttempt a,bool preparing,bool cutting,bool canCook)
+    {
+        steps.SetVisible(!a.Terminal&&!choosingMode);steps.Render(a);
+        if(a.WrongCount>lastWrong){lastWrong=a.WrongCount;wrongText.text=a.Message;wrongUntil=Time.unscaledTime+4.5f;wrongCard.gameObject.SetActive(true);wrongCard.SetAsLastSibling();}
+        if(wrongCard.gameObject.activeSelf&&(Time.unscaledTime>wrongUntil||a.Terminal))wrongCard.gameObject.SetActive(false);
+        if(wrongCard.gameObject.activeSelf)feedbackGroup.gameObject.SetActive(false);
+        bool live=!paused&&!choosingMode&&!a.Terminal;
+        if(!live){coach.Hide();cookHand.Hide();cutHand.Hide();return;}
+        string tip=TipFor(a);if(tip!=null)coach.Offer(tip);
+        float delay=a.TimedChallenge?4f:1.2f;cookHand.IdleDelay=cutHand.IdleDelay=delay;
+        if(coach.Blocking||wrongCard.gameObject.activeSelf){cookHand.Hide();cutHand.Hide();return;}
+        var step=a.Preparation.Current;
+        if(cutting&&step!=null&&step.IsCut){var g=guide.rectTransform.anchoredPosition;cutHand.Show(HandGuide.Motion.Drag,g+new Vector2(0,126),g+new Vector2(0,-126));}else cutHand.Hide();
+        if(a.Phase==CookingPhase.Gather)
+        {
+            int next=-1;for(int i=0;i<4;i++)if(pantryIds[i]!=recipePlan.Distractor&&!a.HasIngredient(pantryIds[i])){next=i;break;}
+            Vector2 at=next>=0?((RectTransform)pantryButtons[next].transform).anchoredPosition:((RectTransform)knifeButton.transform).anchoredPosition;cookHand.Show(HandGuide.Motion.Tap,at);
+        }
+        else if(!canCook)cookHand.Hide();
+        else if(a.Phase==CookingPhase.HeatPot)cookHand.Show(HandGuide.Motion.Tap,((RectTransform)startCooking.transform).anchoredPosition);
+        else if(a.Phase==CookingPhase.Plate)
+        {
+            if(a.Flame>.01)cookHand.Show(HandGuide.Motion.Tap,((RectTransform)adjustHeat.transform).anchoredPosition);
+            else cookHand.Show(HandGuide.Motion.Drag,sandokRect.anchoredPosition,plateRect.anchoredPosition);
+        }
+        else if(a.Heat>85)cookHand.Show(HandGuide.Motion.Tap,((RectTransform)adjustHeat.transform).anchoredPosition);
+        else if(a.NeedsStir)cookHand.Show(HandGuide.Motion.Drag,sandokRect.anchoredPosition,potBody.rectTransform.anchoredPosition+new Vector2(0,40));
+        else if(a.Phase!=CookingPhase.Sear&&a.Phase!=CookingPhase.Simmer&&a.AdditionIndex<dragItems.Length&&a.Heat>=55)
+            cookHand.Show(HandGuide.Motion.Drag,dragItems[a.AdditionIndex].anchoredPosition,new Vector2(0,100));
+        else cookHand.Hide();
+    }
+    private string TipFor(CookingAttempt a)
+    {
+        switch(a.Phase)
+        {
+            case CookingPhase.Gather:{int have=0;foreach(string id in pantryIds)if(a.HasIngredient(id))have++;return have>=a.Recipe.Required?"knife":"gather";}
+            case CookingPhase.Chop:{var s=a.Preparation.Current;return s==null?null:s.IsCut?"cut":s.Target=="SINK"?"wash":"drag";}
+            case CookingPhase.HeatPot:return "heat";
+            case CookingPhase.Sear:return a.Recipe.StirAllowed?"stir":"add";
+            case CookingPhase.Simmer:return "simmer";
+            case CookingPhase.Plate:return "plate";
+            default:return a.Phase>CookingPhase.HeatPot&&a.Phase<CookingPhase.Plate?"add":null;
+        }
+    }
     private string Objective(CookingPhase phase)
     {
         switch(phase)
@@ -330,5 +431,5 @@ public sealed class CookingStageView : MonoBehaviour
     }
     private static string Clock(double value){int seconds=Mathf.Max(0,(int)Math.Ceiling(value));return (seconds/60).ToString("00")+":"+(seconds%60).ToString("00");}
     private static string Stopwatch(double value){int ticks=(int)Math.Floor(value*10);return (ticks/600).ToString("00")+":"+((ticks/10)%60).ToString("00")+"."+(ticks%10);}
-    private void OnDestroy(){if(readableText)Destroy(readableText);}
+    private void OnDestroy(){SandokTool.Grabbed-=OnSandokGrabbed;if(readableText)Destroy(readableText);}
 }

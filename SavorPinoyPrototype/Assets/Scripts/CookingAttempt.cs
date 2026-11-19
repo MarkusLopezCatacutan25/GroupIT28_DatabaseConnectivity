@@ -37,6 +37,13 @@ public sealed class CookingAttempt
     public int RawScore => Math.Max(0, CuttingScore + SequenceScore + ThermalScore - Penalties);
     public bool Terminal => Phase == CookingPhase.Success || Phase == CookingPhase.Failure;
     public bool KnifeSelected { get; private set; }
+    // Sandok: in stir-fry and saute recipes the hold only progresses while the food is being stirred.
+    public const double StirSeconds = 2.5;
+    public double StirTime { get; private set; }
+    public bool Stirring => StirTime > 0;
+    public bool NeedsStir => Phase == CookingPhase.Sear && Recipe.StirAllowed && StirTime <= 0;
+    public string WrongIngredient { get; private set; }
+    public int WrongCount { get; private set; }
     public float Multiplier { get; }
     private readonly HashSet<string> gathered = new HashSet<string>();
     private double accuracySum;
@@ -56,7 +63,7 @@ public sealed class CookingAttempt
     public void Gather(string id)
     {
         if (Terminal || Phase != CookingPhase.Gather) return;
-        if (Array.IndexOf(Recipe.Pantry,id)<0 || id==Recipe.Distractor) { Error("That ingredient is not part of this selected recipe.",100,5); return; }
+        if (Array.IndexOf(Recipe.Pantry,id)<0 || id==Recipe.Distractor) { WrongIngredient=id;WrongCount++;Error(RecipePlan.Name(id)+" is not used in "+Recipe.Dish+". Check the recipe steps on the left.",100,5); return; }
         if (!gathered.Add(id)) { Message = "That ingredient is already selected."; return; }
         Message = "Ingredients gathered: " + gathered.Count + "/"+Recipe.Required+". Choose the knife when ready.";
     }
@@ -87,7 +94,7 @@ public sealed class CookingAttempt
         if (Terminal || Phase != CookingPhase.Chop || !KnifeSelected || Preparation.Current==null || !Preparation.Current.IsCut) return;
         if (double.IsNaN(accuracy) || double.IsInfinity(accuracy)) return;
         accuracy = Math.Max(0, Math.Min(1, accuracy));
-        if (accuracy < .75) { Error("Missed guide: start at the top marker and trace down the line.",100,0); return; }
+        if (accuracy < .6) { Error("Almost! Start at the top marker and drag straight down the green line.",100,0); return; }
         accuracySum += accuracy; Cuts++;Preparation.Cut();
         FinishPreparationStep();
     }
@@ -96,18 +103,25 @@ public sealed class CookingAttempt
     {
         if (Terminal || Phase < CookingPhase.HeatPot || Phase >= CookingPhase.Plate) return;
         string expected=(Phase==CookingPhase.Garlic||Phase==CookingPhase.Turmeric||Phase==CookingPhase.Meat||Phase==CookingPhase.Vinegar)?ExpectedIngredient:null;
-        if(id!=expected||expected==null){Error("Follow the recipe order. Drag the highlighted ingredient into the cooking container.",100,0);return;}
+        if(id!=expected||expected==null)
+        {
+            WrongIngredient=id;WrongCount++;int step=Array.IndexOf(Recipe.Additions,id)+1;
+            Error(expected==null?"Wait for the "+Recipe.SearLabel.ToLowerInvariant()+" to finish first.":"Not yet! Add "+RecipePlan.Name(expected)+" first. "+RecipePlan.Name(id)+" is step "+step+" of "+Recipe.Additions.Length+".",100,0);return;
+        }
         if(Heat<55){Message="The container is too cool. Raise the flame first.";return;}
         AdditionIndex++;
         // Same phase order for every recipe: add, add, ..., one sear/saute hold, add, ..., simmer/steam.
         if(AdditionIndex>=Recipe.Additions.Length){Phase=CookingPhase.Simmer;Message=Recipe.SimmerHint;}
-        else if(AdditionIndex==Recipe.SearAfter){Phase=CookingPhase.Sear;Message=Recipe.SearHint;}
+        else if(AdditionIndex==Recipe.SearAfter){Phase=CookingPhase.Sear;Message=Recipe.SearHint+(Recipe.StirAllowed?" Stir with the sandok.":"");}
         else{Phase=Recipe.SearAfter>0&&AdditionIndex<Recipe.SearAfter?(AdditionIndex==1?CookingPhase.Turmeric:CookingPhase.Meat):CookingPhase.Vinegar;Message="Next: "+RecipePlan.Name(ExpectedIngredient)+".";}
     }
 
     public void Stir()
     {
-        if (Phase == CookingPhase.Simmer && !Recipe.StirAllowed) Error(Recipe.NoStirMessage,500,0);
+        if (Terminal || Phase < CookingPhase.HeatPot) return;
+        if (Phase == CookingPhase.Simmer && !Recipe.StirAllowed) { Error(Recipe.NoStirMessage,500,0); return; }
+        StirTime = StirSeconds;
+        if (Phase == CookingPhase.Sear) Message = Recipe.StirAllowed ? "Stirring with the sandok. Keep the heat in the 60-85 band." : Recipe.SearHint;
     }
     private void Error(string message,int penalty,double seconds)
     {
@@ -140,7 +154,8 @@ public sealed class CookingAttempt
         if (hot) ScorchExposure += dt;
         if (ScorchExposure >= 3) { Fail("Burnt dish: the "+Recipe.Container.ToLowerInvariant()+" stayed too hot. Lower heat earlier to account for retained heat."); return; }
         if (Phase == CookingPhase.HeatPot && Heat >= 60) { Phase = CookingPhase.Garlic; Message = "Container ready. Drag the "+RecipePlan.Name(ExpectedIngredient).ToLowerInvariant()+" into the opening."; }
-        if (Phase == CookingPhase.Sear && Heat >= 60 && Heat <= 85)
+        StirTime = Math.Max(0, StirTime - dt);
+        if (Phase == CookingPhase.Sear && Heat >= 60 && Heat <= 85 && (!Recipe.StirAllowed || StirTime > 0))
         {
             SearProgress = Math.Min(4,SearProgress+dt);
             if (SearProgress >= 4) { Phase = CookingPhase.Vinegar; Message = Recipe.SearLabel.Substring(0,1)+Recipe.SearLabel.Substring(1).ToLowerInvariant()+" complete. Next: "+RecipePlan.Name(ExpectedIngredient)+"."; }

@@ -14,6 +14,7 @@ public sealed class MainMenuManager : MonoBehaviour
         if(!canvas){Debug.LogError("Main Menu needs a Canvas for sign-in.");return;}
         ScreenBrightness.Apply(PlayerPrefs.GetFloat("SavorPinoy.Brightness",1));FitStartArt(canvas);
         PrototypeUI.Font=TMP_Settings.defaultFontAsset;var cardsButton=PrototypeUI.Button("HeritageCardsButton",canvas.transform,"Heritage Cards  "+HeritageCards.Count+"/"+RecipePlan.All.Length,700,-455,380,84,OpenHeritageCards);var cardsRect=(RectTransform)cardsButton.transform;cardsRect.anchorMin=cardsRect.anchorMax=cardsRect.pivot=new Vector2(1,0);cardsRect.anchoredPosition=new Vector2(-36,36);cardsButton.GetComponentInChildren<TMP_Text>().fontStyle=FontStyles.Bold;
+        var howButton=PrototypeUI.Button("HowToPlayButton",canvas.transform,"How to Play",0,0,300,84,OpenHowToPlay);var howRect=(RectTransform)howButton.transform;howRect.anchorMin=howRect.anchorMax=howRect.pivot=Vector2.zero;howRect.anchoredPosition=new Vector2(36,36);howButton.GetComponentInChildren<TMP_Text>().fontStyle=FontStyles.Bold;
         signIn=gameObject.AddComponent<ChefSignInController>();
         signIn.Initialize(canvas,new FirebaseAuthManager(new FirebaseBootstrap(firebaseSettings)));
     }
@@ -21,6 +22,8 @@ public sealed class MainMenuManager : MonoBehaviour
     {
         SavorAudio.Click();
         if(!Application.CanStreamedLevelBeLoaded("RegionalTriviaHub")){Debug.LogError("RegionalTriviaHub is not enabled in the active Build Profile.");return;}
+        // First time on this device: play the demonstration tutorial before sign-in (it can be skipped).
+        if(!DemoTutorial.Seen){OpenHowToPlay(()=>{if(signIn)signIn.Show();});return;}
         if(signIn)signIn.Show();
     }
     public void OpenOptions()
@@ -29,7 +32,7 @@ public sealed class MainMenuManager : MonoBehaviour
         if(options){options.gameObject.SetActive(true);return;}
         Canvas canvas=MenuCanvas();if(!canvas)return;
         PrototypeUI.Font=TMP_Settings.defaultFontAsset;
-        options=PrototypeUI.Panel("OptionsPanel",canvas.transform,0,0,820,680,new Color(.96f,.89f,.72f)).rectTransform;
+        options=PrototypeUI.Panel("OptionsPanel",canvas.transform,0,0,820,680,new Color(.96f,.89f,.72f)).rectTransform;ScreenFit.Attach(options,820,680);
         PrototypeUI.Text("OptionsTitle",options,"Settings",0,255,700,90,44).fontStyle=FontStyles.Bold;
         PrototypeUI.Text("VolumeLabel",options,"Volume",0,160,700,65,32);
         Slider slider=PrototypeUI.HeatSlider(options,0,90,600);slider.value=AudioListener.volume;
@@ -49,6 +52,14 @@ public sealed class MainMenuManager : MonoBehaviour
         foreach(Canvas c in FindObjectsByType<Canvas>(FindObjectsSortMode.None))if(c.gameObject.scene==gameObject.scene&&c.isRootCanvas){menuCanvas=c;break;}
         return menuCanvas;
     }
+    // Beginner tutorial: animated demonstration pages with Next / Back / Skip (see DemoTutorial).
+    public void OpenHowToPlay(){OpenHowToPlay(null);}
+    private void OpenHowToPlay(System.Action after)
+    {
+        Canvas canvas=MenuCanvas();if(!canvas)return;PrototypeUI.Font=TMP_Settings.defaultFontAsset;
+        KitchenArt art=GetComponent<KitchenArt>();if(!art)art=gameObject.AddComponent<KitchenArt>();
+        TutorialCoach.ResetAll();DemoTutorial.Show(canvas.transform,art,after);
+    }
     public void QuitGame(){PlayerPrefs.Save();Application.Quit();}
     private RectTransform cards;
     // Heritage Card collection: one card per dish, earned by a verified save of a completed recipe. Device only.
@@ -57,7 +68,7 @@ public sealed class MainMenuManager : MonoBehaviour
         if(cards){Destroy(cards.gameObject);}
         Canvas canvas=MenuCanvas();if(!canvas)return;PrototypeUI.Font=TMP_Settings.defaultFontAsset;
         KitchenArt art=GetComponent<KitchenArt>();if(!art)art=gameObject.AddComponent<KitchenArt>();
-        cards=PrototypeUI.Panel("HeritageCards",canvas.transform,0,0,1920,1080,new Color(.12f,.055f,.02f,.94f)).rectTransform;
+        cards=PrototypeUI.Panel("HeritageCards",canvas.transform,0,0,1920,1080,new Color(.12f,.055f,.02f,.94f)).rectTransform;ScreenFit.Attach(cards,1920,1080,true);
         cards.anchorMin=Vector2.zero;cards.anchorMax=Vector2.one;cards.offsetMin=cards.offsetMax=Vector2.zero;
         var title=PrototypeUI.Text("CardsTitle",cards,"HERITAGE CARDS",0,430,1200,80,52);title.color=new Color(1,.94f,.78f);title.fontStyle=FontStyles.Bold;
         var sub=PrototypeUI.Text("CardsSubtitle",cards,"Complete a dish and save your result to earn its card.   "+HeritageCards.Count+" of "+RecipePlan.All.Length+" collected",0,368,1500,50,26);sub.color=new Color(1,.94f,.78f);

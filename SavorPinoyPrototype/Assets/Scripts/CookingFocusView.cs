@@ -57,7 +57,7 @@ public sealed class CookingFocusView : MonoBehaviour
         for(int i=0;i<4;i++){float angle=i*60*Mathf.Deg2Rad;TMP_Text mark=PrototypeUI.Text("KnobMark"+i,knobGroup,marks[i],Mathf.Sin(angle)*128,Mathf.Cos(angle)*114,110,34,22);mark.color=new Color(.16f,.08f,.035f);mark.fontStyle=FontStyles.Bold;}
         StoveKnobControl turn=knobGroup.gameObject.AddComponent<StoveKnobControl>();turn.CanTurn=()=>interactive&&heatMode&&!Busy;turn.Changed=v=>{heat.SetValueWithoutNotify(v);flame(v);};
         heading.fontStyle=progress.fontStyle=hint.fontStyle=FontStyles.Bold;
-        ghostRoot=PrototypeUI.Rect("IngredientGhostRoot",design,0,0,1800,1000);ghost=art.Draw("DraggedIngredient",ghostRoot,null,0,0,260,210);ghostRoot.gameObject.SetActive(false);overlay.gameObject.SetActive(false);
+        ghostRoot=PrototypeUI.Rect("IngredientGhostRoot",design,0,0,1800,1000);ghost=art.Draw("DraggedIngredient",ghostRoot,null,0,0,260,210);PreparationLessonView.HoldingHand(ghost.rectTransform);ghostRoot.gameObject.SetActive(false);overlay.gameObject.SetActive(false);
         pour=PrototypeUI.Panel("PourStream",ghostRoot,0,0,16,10,Color.white);pour.raycastTarget=false;pour.rectTransform.pivot=new Vector2(.5f,1);pour.transform.SetAsFirstSibling();pour.gameObject.SetActive(false);
         pour.sprite=art.Loose("PourStream");if(pour.sprite){pour.type=Image.Type.Filled;pour.fillMethod=Image.FillMethod.Vertical;pour.fillOrigin=(int)Image.OriginVertical.Top;}
         splash=art.Draw("PourSplash",ghostRoot,art.Loose("PourSplash"),0,0,330,215);splash.transform.SetAsFirstSibling();splash.gameObject.SetActive(false);
@@ -163,7 +163,7 @@ container.color=CookingVesselPresentation.VesselTint(model);
         contents.Root.localScale=Vector3.one;transferring=false;animation=null;Close();
     }
     public void Close(){if(Busy){Cancel();return;}overlay.gameObject.SetActive(false);ghostRoot.gameObject.SetActive(false);}
-    public void Cancel(){if(animation!=null)StopCoroutine(animation);animation=null;dragging=transferring=false;if(overlay)overlay.gameObject.SetActive(false);if(ghostRoot)ghostRoot.gameObject.SetActive(false);if(ghost){ghost.rectTransform.localScale=Vector3.one;ghost.rectTransform.localRotation=Quaternion.identity;}if(pour)pour.gameObject.SetActive(false);if(splash)splash.gameObject.SetActive(false);if(contents!=null)contents.Root.localScale=Vector3.one;}
+    public void Cancel(){if(animation!=null)StopCoroutine(animation);animation=null;dragging=transferring=false;if(overlay)overlay.gameObject.SetActive(false);if(ghostRoot)ghostRoot.gameObject.SetActive(false);if(ghost){ghost.rectTransform.localScale=Vector3.one;ghost.rectTransform.localRotation=Quaternion.identity;}if(pour)pour.gameObject.SetActive(false);if(splash)splash.gameObject.SetActive(false);if(contents!=null&&contents.Root)contents.Root.localScale=Vector3.one;}
     private void OnDisable(){Cancel();}
 }
 [RequireComponent(typeof(CanvasRenderer))]

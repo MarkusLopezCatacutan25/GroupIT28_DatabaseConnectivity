@@ -22,6 +22,9 @@ public sealed class PreparationLessonView
     private readonly BubbleGraphic idleBubbles,washBubbles;
     private readonly SparkleGraphic cleanGlints;
     private readonly TMP_Text cleanText;
+    // Demonstration hands: two scrubbing hands at the sink and a guide hand for drag steps.
+    private readonly RectTransform[] washHands=new RectTransform[2];
+    private readonly HandGuide prepHand;
     // Sink station layout (closeup coordinates), measured from SinkStation.png (full-scene art, 16:9):
     // tap mouth at x 137 / y 122, basin interior centred at x 5 / y -216.
     private const float SinkX=137,ArtY=-60,MouthY=122,BasinX=5,BasinY=-216,BasinW=780,BasinH=250,ItemY=-190;
@@ -43,7 +46,14 @@ public sealed class PreparationLessonView
         if(washStream.sprite){washStream.type=Image.Type.Filled;washStream.fillMethod=Image.FillMethod.Vertical;washStream.fillOrigin=(int)Image.OriginVertical.Top;}
         washItem=art.Draw("SinkItem",sinkStation,null,SinkX,ItemY,240,180);
         washSplash=art.Draw("SinkSplash",sinkStation,art.Loose("PourSplash"),SinkX,ItemY-30,280,140);washSplash.color=Water;
-        washStream.transform.SetSiblingIndex(washItem.transform.GetSiblingIndex()+1);washBubbles.transform.SetAsLastSibling();
+        washStream.transform.SetSiblingIndex(washItem.transform.GetSiblingIndex()+1);
+        for(int i=0;i<2;i++)
+        {
+            var h=PrototypeUI.Rect("WashHand"+i,sinkStation,SinkX,ItemY,130,160);h.pivot=new Vector2(.5f,1);
+            var g=h.gameObject.AddComponent<HandGraphic>();g.Open=true;g.raycastTarget=false;if(i==1)h.localScale=new Vector3(-1,1,1);
+            washHands[i]=h;h.gameObject.SetActive(false);
+        }
+        washBubbles.transform.SetAsLastSibling();
         // After rinsing: the item twinkles and a cheer pops up, so a finished wash feels rewarding.
         cleanGlints=PrototypeUI.Rect("CleanGlints",sinkStation,0,0,1800,1000).gameObject.AddComponent<SparkleGraphic>();cleanGlints.raycastTarget=false;
         cleanGlints.Points=new[]{new Vector2(SinkX-120,ItemY+70),new Vector2(SinkX+115,ItemY+80),new Vector2(SinkX+130,ItemY-50),new Vector2(SinkX-110,ItemY-55),new Vector2(SinkX,ItemY+105)};
@@ -66,7 +76,9 @@ public sealed class PreparationLessonView
         instruction=PrototypeUI.Text("PreparationInstruction",instructionCard.transform,"",0,-48,1340,80,27);instruction.color=new Color(.16f,.07f,.02f);instruction.fontStyle=FontStyles.Bold;
         stepCount=PrototypeUI.Text("PreparationStepCount",instructionCard.transform,"",0,68,1300,30,22);stepCount.color=new Color(.45f,.26f,.10f);stepCount.fontStyle=FontStyles.Bold;
         ghostRoot=PrototypeUI.Rect("PreparationGhostRoot",design,0,0,1800,1000);ghost=art.Draw("PreparationGhost",ghostRoot,null,0,0,220,180);ghostRoot.gameObject.SetActive(false);
+        HoldingHand(ghost.rectTransform);
         gesture=source.gameObject.AddComponent<IngredientDrag>();gesture.Target=target;
+        prepHand=HandGuide.Create("PrepHandGuide",group);
         gesture.CanDrag=()=>enabled&&!washing&&model?.Preparation.Current!=null&&!model.Preparation.Current.IsCut;
         gesture.Begin=()=>{stepId=model.Preparation.Current.Id;ghost.sprite=source.sprite;ghostRoot.gameObject.SetActive(true);ghostRoot.SetAsLastSibling();return ghost.rectTransform;};
         gesture.End=(ok,point)=>
@@ -76,6 +88,12 @@ public sealed class PreparationLessonView
             if(model.Preparation.Current.Target=="SINK"){if(wash!=null)art.StopCoroutine(wash);wash=art.StartCoroutine(Wash(stepId,source.sprite));}
             else action("prepare:"+stepId);
         };
+    }
+    // A hand under the dragged copy, so a grabbed item looks held between the fingers.
+    public static void HoldingHand(RectTransform item)
+    {
+        var h=PrototypeUI.Rect("HoldingHand",item,18,-item.sizeDelta.y*.12f,130,160);h.pivot=new Vector2(.5f,1);h.SetAsFirstSibling();
+        h.gameObject.AddComponent<HandGraphic>().raycastTarget=false;h.localRotation=Quaternion.Euler(0,0,-12);
     }
     // Rinse under the running tap: water falls, the item turns under it, then the step completes.
     private IEnumerator Wash(string id,Sprite item)
@@ -90,9 +108,12 @@ public sealed class PreparationLessonView
             itemRect.localRotation=Quaternion.Euler(0,0,Mathf.Sin(t*Mathf.PI*6)*9);
             itemRect.anchoredPosition=new Vector2(SinkX+Mathf.Sin(t*Mathf.PI*4)*18,ItemY);
             splashRect.localScale=Vector3.one*(.6f+.4f*Mathf.Abs(Mathf.Sin(t*Mathf.PI*5)))*flow;
+            // Two hands rub the item under the water.
+            for(int i=0;i<2;i++){float side=i==0?-1:1,rub=Mathf.Sin(t*Mathf.PI*10+i*Mathf.PI)*22;washHands[i].gameObject.SetActive(true);washHands[i].SetAsLastSibling();
+                washHands[i].anchoredPosition=new Vector2(SinkX+side*(70+rub),ItemY+95+Mathf.Cos(t*Mathf.PI*10)*8);washHands[i].localRotation=Quaternion.Euler(0,0,side*-(28+rub*.4f));}
             yield return null;
         }
-        itemRect.localRotation=Quaternion.identity;washStream.gameObject.SetActive(false);washSplash.gameObject.SetActive(false);
+        itemRect.localRotation=Quaternion.identity;washStream.gameObject.SetActive(false);washSplash.gameObject.SetActive(false);foreach(var h in washHands)h.gameObject.SetActive(false);
         cleanGlints.gameObject.SetActive(true);cleanText.gameObject.SetActive(true);
         for(float t=0;t<1;t+=Time.unscaledDeltaTime/.8f)
         {
@@ -126,6 +147,7 @@ public sealed class PreparationLessonView
         example.sprite=atSink?null:step.Id=="separate"?art.Atlas(0):step.Id=="peel_garlic"?art.Atlas(1):step.Id=="peel_carrot"?art.Loose("CarrotPeeled"):step.Id=="beat_egg"?art.Loose("EggBeaten"):null;
         example.gameObject.SetActive(example.sprite);
         source.color=Color.Lerp(Color.white,new Color(1,.9f,.67f),attempt.Preparation.Repetition/(float)step.Repetitions);
+        if(interactive&&!washing&&!step.IsCut)prepHand.Show(HandGuide.Motion.Drag,source.rectTransform.anchoredPosition,target.anchoredPosition);else prepHand.Hide();
     }
     private static void Place(RectTransform r,float x,float y,float w,float h){r.anchoredPosition=new Vector2(x,y);r.sizeDelta=new Vector2(w,h);}
     private static Sprite Pick(Sprite first,Sprite fallback)=>first?first:fallback;
@@ -133,6 +155,7 @@ public sealed class PreparationLessonView
     {
         gesture.Cancel();ghostRoot.gameObject.SetActive(false);
         if(wash!=null){art.StopCoroutine(wash);wash=null;}
+        foreach(var h in washHands)if(h)h.gameObject.SetActive(false);
         if(washing){washing=false;source.enabled=true;washItem.gameObject.SetActive(false);washStream.gameObject.SetActive(false);washSplash.gameObject.SetActive(false);washBubbles.gameObject.SetActive(false);cleanGlints.gameObject.SetActive(false);cleanText.gameObject.SetActive(false);washItem.rectTransform.localScale=Vector3.one;}
     }
 }

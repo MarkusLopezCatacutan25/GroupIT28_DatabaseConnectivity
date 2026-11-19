@@ -45,7 +45,8 @@ public sealed class CookingStageController : MonoBehaviour
     private void Update()
     {
         if(view==null||attempt==null)return;view.FitIfNeeded();
-        if(!paused&&!choosing&&!attempt.Terminal){attempt.Advance(Time.unscaledDeltaTime);Render();}
+        // Time stands still while a beginner tip is open.
+        if(!paused&&!choosing&&!attempt.Terminal){if(!view.TutorialBlocking)attempt.Advance(Time.unscaledDeltaTime);Render();}
         bool cooking=!paused&&!choosing&&!attempt.Terminal&&attempt.Flame>.05&&attempt.Phase>=CookingPhase.HeatPot;
         SavorAudio.SetLoops(cooking&&attempt.AdditionIndex>0&&attempt.Phase<CookingPhase.Simmer,cooking&&attempt.Phase==CookingPhase.Simmer,(float)attempt.Flame);
         if(lastUid!=identity.Uid){lastUid=identity.Uid;view.SetIdentity(lastUid);result.IdentityChanged();}
